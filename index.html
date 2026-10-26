@@ -246,9 +246,9 @@ body.portrait .scene .stitle{align-self:flex-start}
     <div class="headline" id="headline">개표 시작을 기다리고 있습니다</div>
     <div style="height:110px"></div>
     <div class="vs">
-      <div class="side coal"><div class="lab">여당</div><div class="big num" id="sCoal">0</div><div class="who">리쿠드 · 오츠마 예후디트 · 종교시온주의당 · 샤스 · 토라유대교연합</div></div>
+      <div class="side coal"><div class="lab">여당</div><div class="big num" id="sCoal">0</div><div class="who">리쿠드당 · 유대의 힘 · 종교시오니즘당 · 샤스 · 토라유대주의연합</div></div>
       <div class="mid"><div class="m1">과반</div><div class="m2 num">61</div><div class="m3">전체 120석</div></div>
-      <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">베야하드 · 야샤르 · 청백당 · 민주당 · 이스라엘 베이테누 외</div></div>
+      <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">야샤르당 · 비야하드 · 청백당 · 민주당 · 이스라엘 베이테누 외</div></div>
     </div>
     <div class="blocs" id="blocs"></div>
   </section>
@@ -320,18 +320,18 @@ const CONFIG = {
  * 블록은 위키백과 여론조사 문서의 Gov. 집계(37대 정부 구성 정당)를 따름
  * bloc: 'coal'(여당) | 'opp'(야당) | 'oth'(군소정당) */
 const PARTIES = {
-  likud:      { name:'리쿠드', leader:'네타냐후', color:'#2a6be0', bloc:'coal', letters:['מחל'] },
-  otzma:      { name:'오츠마 예후디트', leader:'벤그비르', color:'#e8a33a', bloc:'coal', letters:['ב'] },
-  rzp:        { name:'종교시온주의당·제후트', leader:'스모트리치', color:'#9a7ed0', bloc:'coal', letters:['ט'] },
+  likud:      { name:'리쿠드당', leader:'네타냐후', color:'#2a6be0', bloc:'coal', letters:['מחל'] },
+  otzma:      { name:'유대의 힘', leader:'벤그비르', color:'#e8a33a', bloc:'coal', letters:['ב'] },
+  rzp:        { name:'종교시오니즘당', leader:'스모트리치', color:'#9a7ed0', bloc:'coal', letters:['ט'] },
   shas:       { name:'샤스', leader:'데리', color:'#4a6fb0', bloc:'coal', letters:['שס'] },
-  utj:        { name:'토라유대교연합', leader:'골드크노프', color:'#9aa4b2', bloc:'coal', letters:['ג'] },
-  together:   { name:'베야하드', leader:'베네트', color:'#2fb5c9', bloc:'opp', letters:['רק'] },
-  yashar:     { name:'야샤르', leader:'아이젠코트', color:'#3a7d5c', bloc:'opp', letters:['דרך'] },
+  utj:        { name:'토라유대주의연합', leader:'골드크노프', color:'#9aa4b2', bloc:'coal', letters:['ג'] },
+  together:   { name:'비야하드', leader:'베네트', color:'#2fb5c9', bloc:'opp', letters:['רק'] },
+  yashar:     { name:'야샤르당', leader:'아이젠코트', color:'#3a7d5c', bloc:'opp', letters:['דרך'] },
   bluewhite:  { name:'청백당', leader:'간츠', color:'#3d6fd1', bloc:'opp', letters:['כן'] },
   democrats:  { name:'민주당', leader:'골란', color:'#d6453d', bloc:'opp', letters:['אמת'] },
   yb:         { name:'이스라엘 베이테누', leader:'리베르만', color:'#5a9e2f', bloc:'opp', letters:['ל'] },
-  reservists: { name:'예비군·경제당', leader:'헨델', color:'#b8925a', bloc:'opp', letters:['די'] },
-  amcha:      { name:'암차 이스라엘', leader:'빈터', color:'#93a83c', bloc:'opp', letters:['ך'] },
+  reservists: { name:'예비군당', leader:'헨델', color:'#b8925a', bloc:'opp', letters:['די'] },
+  amcha:      { name:'이스라엘 인민당', leader:'윈터', color:'#93a83c', bloc:'opp', letters:['ך'] },
   joint:      { name:'공동명부', leader:'자바린', color:'#b23a48', bloc:'opp', letters:['ודם'] },
   raam:       { name:'라암', leader:'압바스', color:'#2e7d32', bloc:'opp', letters:['עם'] },
   noam:       { name:'노암', leader:'마오즈', color:'#c47a4f', bloc:'opp', letters:['ני'] },
@@ -340,7 +340,7 @@ const PARTIES = {
 const MINOR = { 'צדק':'샤르샤르','ד':'모두를 위한 동반자','צף':'해적당','י':'이스라엘 퍼스트','ה':'에덴동산','קה':'여성의 목소리',
   'בד':'함께라면 성공한다','קץ':'정의로운 법','נף':'셰마','קך':'새 질서','זך':'하레디 대중','פה':'나와 너','זץ':'영원한 언약',
   'נקי':'선거·정부제도 개혁','יק':'성경 블록','ז':'사회보장','בקר':'새벽빛','נץ':'개인 안보','נר':'검은색','צבי':'아히 운동',
-  'בי':'이스라엘의 집 교차로','ק':'구원' , 'רץ':'하카할' };
+  'בי':'이스라엘의 집 교차로','ק':'구원' , 'רץ':'공동체당' };
 
 /* 잔여표 합의(apparentment) 5쌍 — 위키백과 기준 */
 const AGREEMENTS = [ ['together','yb'], ['yashar','democrats'], ['joint','raam'], ['likud','rzp'], ['shas','utj'] ];
@@ -450,7 +450,7 @@ function allocate(parties, valid){
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('ko-KR');
 const pctf = (n,d=1) => n.toFixed(d)+'%';
-const meta = p => PARTIES[p.letter] || { name: MINOR[p.ballot] || p.name || p.ballot, color:'#6c7891', bloc:'oth' };
+const meta = p => PARTIES[p.letter] || { name: MINOR[p.ballot] || p.name || '기타 정당', color:'#6c7891', bloc:'oth' };
 let prevSeats = {}, tickerKey = '';
 
 function render(d){
@@ -508,7 +508,7 @@ function render(d){
     const changed = has && prevSeats[p.letter]!==undefined && prevSeats[p.letter]!==p.seats;
     return `<div class="card ${has&&p.votes<thrVotes?'out':''} ${changed?'flash':''}" style="--c:${p.m.color}">
       <span class="tag" style="background:${BLOCS[p.m.bloc].color}">${BLOCS[p.m.bloc].label}</span>
-      <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||p.ballot}</div>
+      <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||''}</div>
       <div class="st">${p.seats}<small> 석</small></div><div class="pct">${pctf(p.share)}</div></div>`;
   }).join('');
   prevSeats = Object.fromEntries(list.map(p=>[p.letter,p.seats]));

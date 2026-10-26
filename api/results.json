@@ -20,7 +20,7 @@
     {
       "letter": "מחל",
       "id": "likud",
-      "name": "리쿠드",
+      "name": "리쿠드당",
       "name_en": "Likud",
       "leader": "네타냐후",
       "bloc": "gov",
@@ -32,7 +32,7 @@
     {
       "letter": "ב",
       "id": "otzma",
-      "name": "오츠마 예후디트",
+      "name": "유대의 힘",
       "name_en": "Otzma Yehudit",
       "leader": "벤그비르",
       "bloc": "gov",
@@ -44,7 +44,7 @@
     {
       "letter": "ט",
       "id": "rzp",
-      "name": "종교시온주의당·제후트",
+      "name": "종교시오니즘당",
       "name_en": "Religious Zionism–Zehut",
       "leader": "스모트리치",
       "bloc": "gov",
@@ -68,7 +68,7 @@
     {
       "letter": "ג",
       "id": "utj",
-      "name": "토라유대교연합",
+      "name": "토라유대주의연합",
       "name_en": "United Torah Judaism",
       "leader": "골드크노프",
       "bloc": "gov",
@@ -80,7 +80,7 @@
     {
       "letter": "רק",
       "id": "together",
-      "name": "베야하드",
+      "name": "비야하드",
       "name_en": "Together",
       "leader": "베네트",
       "bloc": "opp",
@@ -92,7 +92,7 @@
     {
       "letter": "דרך",
       "id": "yashar",
-      "name": "야샤르",
+      "name": "야샤르당",
       "name_en": "Yashar",
       "leader": "아이젠코트",
       "bloc": "opp",
@@ -140,7 +140,7 @@
     {
       "letter": "די",
       "id": "reservists",
-      "name": "예비군·경제당",
+      "name": "예비군당",
       "name_en": "The Reservists",
       "leader": "헨델",
       "bloc": "opp",
@@ -152,9 +152,9 @@
     {
       "letter": "ך",
       "id": "amcha",
-      "name": "암차 이스라엘",
+      "name": "이스라엘 인민당",
       "name_en": "Amcha Yisrael",
-      "leader": "빈터",
+      "leader": "윈터",
       "bloc": "opp",
       "votes": 0,
       "share": 0,
