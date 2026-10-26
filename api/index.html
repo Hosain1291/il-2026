@@ -16,8 +16,7 @@ pre{margin:0;padding:16px;white-space:pre-wrap;word-break:break-word}
 </style></head><body>
 <header><span><span class="dot" id="dot"></span><b>개표 API 실시간 보기</b></span>
 <select id="sel"></select>
-<label style="font:13px system-ui"><input type="checkbox" id="auto" checked> 자동 갱신</label>
-<button id="now">지금 갱신</button><span id="meta">불러오는 중</span></header>
+<span id="meta">불러오는 중</span></header>
 <pre id="out"></pre>
 <script>
 const EP=['results.json','localities.json','parties.json','status.json'];
@@ -25,7 +24,7 @@ const sel=document.getElementById('sel'), out=document.getElementById('out'), me
 const cur=(new URLSearchParams(location.search).get('f'))||'results.json';
 [...new Set([cur,...EP])].forEach(p=>sel.add(new Option(p,p,false,p===cur)));
 sel.onchange=()=>{ history.replaceState(null,'','?f='+sel.value); prev=null; load(); };
-let prev=null, timer, left=0, es=null; const SEC=30;
+let prev=null, timer, left=0, es=null; const SEC=20;
 const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function paint(obj){
   const now={}, pad=n=>'  '.repeat(n);
@@ -51,10 +50,8 @@ async function load(){
   }catch(e){ dot.className='dot err'; meta.dataset.t='오류: '+e.message; }
   left=SEC; tick();
 }
-function tick(){ meta.textContent=(meta.dataset.t||'')+(document.getElementById('auto').checked?' · '+left+'초 뒤 갱신':' · 자동 갱신 꺼짐'); }
-setInterval(()=>{ if(!document.getElementById('auto').checked) return tick(); left--; if(left<=0) load(); else tick(); },1000);
-document.getElementById('now').onclick=load;
-document.getElementById('auto').onchange=tick;
+function tick(){ meta.textContent=(meta.dataset.t||'')+' 기준 · '+left+'초 뒤 자동 갱신'; }
+setInterval(()=>{ left--; if(left<=0) load(); else tick(); },1000);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
 load();
 </script></body></html>

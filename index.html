@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071330">
 <title>2026 이스라엘 총선 개표방송</title>
 <style>
 /* Cafe24 PRO Slim — 파일을 페이지 안에 직접 넣어 외부 연결 없이 항상 적용 */
@@ -13,11 +14,11 @@
   --ink:#f3f6fb; --muted:#9fb0cc; --glass:rgba(10,24,52,.82); --line:rgba(120,160,230,.25);
 }
 *{box-sizing:border-box;margin:0}
-html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:'Cafe24ProSlim',sans-serif,sans-serif}
+html,body{height:100%;margin:0;background:#040a1a;overflow:hidden;overscroll-behavior:none;touch-action:pan-y;color:var(--ink);font-family:'Cafe24ProSlim',sans-serif,sans-serif}
 .num{font-family:'Cafe24ProSlim',sans-serif,sans-serif;font-variant-numeric:tabular-nums}
 
 /* 1920×1080 무대를 화면 크기에 맞춰 축소·확대 (레터박스) */
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;
+#stage{position:fixed;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;
   background:
     radial-gradient(900px 500px at 15% 0%,rgba(42,107,224,.35),transparent 70%),
     radial-gradient(900px 500px at 85% 100%,rgba(94,195,242,.22),transparent 70%),
@@ -579,7 +580,9 @@ function fit(){
   // 화면 비율에 맞춰 무대 크기 자체를 바꿔서 여백(검은 띠) 없이 꽉 채움
   //  - 세로 화면(폭<높이): 폭 1080 기준 세로 배치. 폴드 펼친 화면처럼 정사각형에 가까우면 폭을 넓혀 높이 1960 확보
   //  - 가로 화면: 높이 1080 기준. 16:9보다 좁으면(폴드 가로·태블릿) 높이를, 넓으면 폭을 늘림
-  const w = innerWidth, h = innerHeight, r = w/h;
+  // 실제로 보이는 영역(주소창·툴바 제외) 크기에 정확히 맞춤
+  const vv = window.visualViewport;
+  const w = Math.round(vv ? vv.width : innerWidth), h = Math.round(vv ? vv.height : innerHeight), r = w/h;
   const portrait = r < 1;
   document.body.classList.toggle('portrait', portrait);
   let W, H;
@@ -588,8 +591,11 @@ function fit(){
   else { H = 1080; W = Math.round(1080*r); }
   const st = $('stage');
   st.style.width = W+'px'; st.style.height = H+'px';
-  st.style.transform = `translate(-50%,-50%) scale(${w/W})`;
+  const k = Math.min(w/W, h/H);
+  st.style.transform = `translate(${(w-W*k)/2}px,${(h-H*k)/2}px) scale(${k})`;
 }
+if(window.visualViewport) visualViewport.addEventListener('resize', fit);
+addEventListener('orientationchange', ()=>setTimeout(fit, 300));
 // 모바일: 좌우로 밀어서 장면 넘기기
 let tx=null, ty=null;
 addEventListener('touchstart', e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
