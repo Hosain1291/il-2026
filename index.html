@@ -223,6 +223,12 @@ body.portrait .nav{top:336px;bottom:340px;width:70px}
 body.portrait .scene[data-name="여야 의석"].on{display:flex;flex-direction:column;justify-content:center;padding-bottom:80px}
 body.portrait ~ .hint, body.portrait .hint{display:none}
 @media (hover:none){.hint{display:none}.nav{opacity:0 !important}}
+
+/* 가로 화면인데 16:9보다 세로가 긴 경우(폴드 가로·태블릿): 남는 높이를 장면 위아래로 나눔 */
+body:not(.portrait) .scene[data-name="여야 의석"].on{display:flex;flex-direction:column;justify-content:center}
+/* 세로로 긴 화면(폴드 커버 등): 모든 장면 내용을 가운데로 모아 빈 공간을 위아래로 나눔 */
+body.portrait .scene.on{display:flex;flex-direction:column;justify-content:center}
+body.portrait .scene .stitle{align-self:flex-start}
 </style>
 </head>
 <body>
@@ -569,14 +575,19 @@ document.addEventListener('keydown', e=>{
 
 /* ===== 16:9 무대 크기 맞춤 ===== */
 function fit(){
-  const portrait = innerWidth/innerHeight < 0.9;            // 세로 화면이면 1080×1920 무대
+  // 화면 비율에 맞춰 무대 크기 자체를 바꿔서 여백(검은 띠) 없이 꽉 채움
+  //  - 세로 화면(폭<높이): 폭 1080 기준 세로 배치. 폴드 펼친 화면처럼 정사각형에 가까우면 폭을 넓혀 높이 1960 확보
+  //  - 가로 화면: 높이 1080 기준. 16:9보다 좁으면(폴드 가로·태블릿) 높이를, 넓으면 폭을 늘림
+  const w = innerWidth, h = innerHeight, r = w/h;
+  const portrait = r < 1;
   document.body.classList.toggle('portrait', portrait);
-  // 세로 화면은 폭 1080 기준으로 화면 비율에 맞춰 높이를 늘려 위아래 검은 띠가 생기지 않게 함
-  const W = portrait ? 1080 : 1920;
-  const H = portrait ? Math.max(1700, Math.round(1080*innerHeight/innerWidth)) : 1080;
-  $('stage').style.width = W+'px'; $('stage').style.height = H+'px';
-  const k = Math.min(innerWidth/W, innerHeight/H);
-  $('stage').style.transform=`translate(-50%,-50%) scale(${k})`;
+  let W, H;
+  if(portrait){ W = Math.max(1080, Math.round(1960*r)); H = Math.round(W/r); }
+  else if(r < 16/9){ W = 1920; H = Math.round(1920/r); }
+  else { H = 1080; W = Math.round(1080*r); }
+  const st = $('stage');
+  st.style.width = W+'px'; st.style.height = H+'px';
+  st.style.transform = `translate(-50%,-50%) scale(${w/W})`;
 }
 // 모바일: 좌우로 밀어서 장면 넘기기
 let tx=null, ty=null;
