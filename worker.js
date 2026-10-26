@@ -9,7 +9,11 @@
 //    /api/locality         한 지역 결과              ?code=5000  또는  ?name=תל אביב
 //    /api/parties          정당 목록(기호·이름·대표·블록·잔여표 합의)
 //    /api/polls            여론조사 평균(중동포럼 poll-of-polls 중계)
+//    /api/stream           실시간 스트림(SSE) — 결과가 바뀔 때마다 자동 전송, 15초 간격 확인
 //    /files/expc.csv       선관위 원본 CSV 중계
+//
+//  브라우저 주소창에서 /api/... 를 열면 30초마다 자동 갱신되는 뷰어가 뜸 (새로고침 불필요)
+//  JSON 원문이 필요하면 ?format=json 을 붙이거나 fetch()로 호출
 //
 //  데이터 출처 (환경 변수 SOURCE 로 선택)
 //    relay (기본)  johnnoto/israel-election-watcher 의 live.json
@@ -54,13 +58,23 @@ export default {
     const url = new URL(request.url);
     const source = (env.SOURCE || 'relay').toLowerCase();
 
+    // 브라우저 주소창으로 /api/... 를 열면 → 자동 갱신 뷰어 페이지
+    // (fetch 코드나 ?format=json 으로 부르면 → 그대로 JSON)
+    const wantsHTML = (request.headers.get('Accept') || '').includes('text/html');
+    if (wantsHTML && url.pathname.startsWith('/api') && url.searchParams.get('format') !== 'json') {
+      return new Response(viewerHTML(), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
+    }
+
+    // 실시간 스트림(Server-Sent Events): 새로고침 없이 결과가 바뀔 때마다 밀어줌
+    if (url.pathname === '/api/stream') return stream(source, ctx);
+
     try {
       switch (url.pathname.replace(/\/+$/, '') || '/') {
         case '/':
         case '/api':
           return json({
             name: '이스라엘 제26대 크네세트 총선 개표 API', source,
-            endpoints: ['/api/results', '/api/localities?sort=voters&limit=50', '/api/locality?code=5000',
+            endpoints: ['/api/results', '/api/stream', '/api/localities?sort=voters&limit=50', '/api/locality?code=5000',
                         '/api/locality?name=תל אביב', '/api/parties', '/api/polls', '/files/expc.csv'],
           });
 
@@ -216,6 +230,98 @@ function allocate(votes, valid) {
     else dhondt(u.m, s).forEach((t, j) => { out[u.m[j].letter] = t; });
   });
   return out;
+}
+
+// ---------------------------------------------------------------------
+//  실시간 스트림 (SSE): 15초마다 확인해서 바뀌었으면 'results' 이벤트 전송, 최대 10분 유지 후 브라우저가 자동 재연결
+// ---------------------------------------------------------------------
+function stream(source, ctx) {
+  const { readable, writable } = new TransformStream();
+  const w = writable.getWriter(), enc = new TextEncoder();
+  const send = (event, data) => w.write(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+  ctx.waitUntil((async () => {
+    let last = '';
+    try {
+      await w.write(enc.encode('retry: 5000\n\n'));
+      for (let i = 0; i < 40; i++) {                       // 15초 × 40 = 10분
+        try {
+          const sum = summary(await load(source, ctx));
+          const key = JSON.stringify([sum.status, sum.valid, sum.counted_pct]);
+          if (key !== last) { await send('results', sum); last = key; }
+          else await w.write(enc.encode(`: 변화 없음 ${new Date().toISOString()}\n\n`));
+        } catch (e) { await send('error', { error: e.message }); }
+        await new Promise(r => setTimeout(r, 15000));
+      }
+    } catch { /* 브라우저가 연결을 끊음 */ }
+    try { await w.close(); } catch {}
+  })());
+  return cors(new Response(readable, { headers: { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'Connection': 'keep-alive' } }));
+}
+
+// ---------------------------------------------------------------------
+//  자동 갱신 뷰어 (브라우저로 /api/... 를 열었을 때)
+// ---------------------------------------------------------------------
+function viewerHTML() {
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>개표 API 실시간 보기</title>
+<style>
+:root{color-scheme:dark}
+body{margin:0;background:#07101f;color:#e8eef8;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+header{position:sticky;top:0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:12px 16px;background:#0d1d3a;border-bottom:1px solid #1f3560}
+header b{font:700 16px system-ui,sans-serif}
+.dot{width:10px;height:10px;border-radius:50%;background:#3a4660;display:inline-block;margin-right:6px}
+.dot.on{background:#e3262f;animation:b 1.2s infinite}@keyframes b{50%{opacity:.2}}
+.dot.err{background:#c99700}
+select,button{background:#132647;color:#e8eef8;border:1px solid #2a4577;border-radius:6px;padding:5px 9px;font:13px system-ui,sans-serif}
+#meta{color:#8fa0bd;font:13px system-ui,sans-serif;margin-left:auto}
+pre{margin:0;padding:16px;white-space:pre-wrap;word-break:break-word}
+.k{color:#8fb6ff}.s{color:#a5e3a1}.n{color:#ffc83d}.b{color:#f08f8f}
+.chg{background:rgba(255,200,61,.25);border-radius:3px;transition:background 3s}
+</style></head><body>
+<header><span><span class="dot" id="dot"></span><b>개표 API 실시간 보기</b></span>
+<select id="sel"></select>
+<label style="font:13px system-ui"><input type="checkbox" id="auto" checked> 자동 갱신</label>
+<button id="now">지금 갱신</button><span id="meta">불러오는 중</span></header>
+<pre id="out"></pre>
+<script>
+const EP=['/api/results','/api/localities?limit=30','/api/parties','/api/polls','/api'];
+const sel=document.getElementById('sel'), out=document.getElementById('out'), meta=document.getElementById('meta'), dot=document.getElementById('dot');
+const cur=location.pathname+location.search;
+[...new Set([cur,...EP])].forEach(p=>sel.add(new Option(p,p,false,p===cur)));
+sel.onchange=()=>{ history.replaceState(null,'',sel.value); prev=null; load(); };
+let prev=null, timer, left=0, es=null; const SEC=30;
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function paint(obj){
+  const now={}, pad=n=>'  '.repeat(n);
+  function val(v,path){
+    now[path]=v; const hit=prev&&prev[path]!==undefined&&prev[path]!==v;
+    const cls=typeof v==='string'?'s':typeof v==='number'?'n':'b';
+    return '<span class="'+cls+(hit?' chg':'')+'">'+esc(JSON.stringify(v))+'</span>';
+  }
+  function walk(o,path,d){
+    if(o===null||typeof o!=='object') return val(o,path);
+    const arr=Array.isArray(o), ks=Object.keys(o);
+    if(!ks.length) return arr?'[]':'{}';
+    const items=ks.map(k=>pad(d+1)+(arr?'':'<span class="k">'+esc(JSON.stringify(k))+'</span>: ')+walk(o[k],path+'.'+k,d+1));
+    return (arr?'[':'{')+'\\n'+items.join(',\\n')+'\\n'+pad(d)+(arr?']':'}');
+  }
+  out.innerHTML=walk(obj,'',0); prev=now;
+}
+async function load(){
+  try{
+    const u=new URL(sel.value,location.origin); u.searchParams.set('format','json'); u.searchParams.set('t',Date.now());
+    const r=await fetch(u,{cache:'no-store'}); const j=await r.json(); paint(j);
+    dot.className='dot '+(j.status==='counting'?'on':''); meta.dataset.t=new Date().toLocaleTimeString('ko-KR');
+  }catch(e){ dot.className='dot err'; meta.dataset.t='오류: '+e.message; }
+  left=SEC; tick();
+}
+function tick(){ meta.textContent=(meta.dataset.t||'')+(document.getElementById('auto').checked?' · '+left+'초 뒤 갱신':' · 자동 갱신 꺼짐'); }
+setInterval(()=>{ if(!document.getElementById('auto').checked) return tick(); left--; if(left<=0) load(); else tick(); },1000);
+document.getElementById('now').onclick=load;
+document.getElementById('auto').onchange=tick;
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
+load();
+<\/script></body></html>`;
 }
 
 // ---------------------------------------------------------------------

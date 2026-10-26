@@ -18,4 +18,12 @@
 봉쇄조항 3.25%와 잔여표 합의 5쌍을 반영한 바데르-오페르(동트) 방식 추정치입니다. 공식 결과와 다를 수 있습니다.
 
 ## worker.js (선택)
-Cloudflare Workers에 올리면 개표 API가 됩니다: `/api/results`, `/api/localities`, `/api/locality?code=`, `/api/parties`, `/api/polls`
+Cloudflare Workers에 올리면 개표 API가 됩니다: `/api/results`, `/api/localities`, `/api/locality?code=`, `/api/parties`, `/api/polls`, `/api/stream`
+
+- 브라우저 주소창으로 `/api/...`를 열면 **30초마다 자동 갱신되는 뷰어**가 뜹니다. 바뀐 값은 노란색으로 표시됩니다.
+- JSON 원문이 필요하면 `?format=json`을 붙이거나 `fetch()`로 부르세요.
+- `/api/stream`은 결과가 바뀔 때마다 밀어주는 실시간 스트림(SSE)입니다:
+  ```js
+  const es = new EventSource('https://워커주소/api/stream');
+  es.addEventListener('results', e => console.log(JSON.parse(e.data)));
+  ```
