@@ -639,9 +639,7 @@ async function tick(){
     if(d.pre){
       if(!rendered) render(emptyData());
       $('live').className='live off';
-      banner.textContent = d.test ? '현재 선관위 데이터는 시험용이라 표시하지 않습니다 · 투표 종료(한국시간 28일 05:00) 후 자동 표시'
-                                  : '연결됨 · 개표 시작 전 · 투표 종료(한국시간 28일 05:00) 후 결과가 자동으로 표시됩니다';
-      banner.style.display='block'; return;
+      banner.style.display='none'; return;
     }
     render(d); rendered=true; banner.style.display='none';
   }catch(e){
