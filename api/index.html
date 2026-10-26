@@ -1,0 +1,60 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>개표 API 실시간 보기</title>
+<style>
+:root{color-scheme:dark}
+body{margin:0;background:#07101f;color:#e8eef8;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+header{position:sticky;top:0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:12px 16px;background:#0d1d3a;border-bottom:1px solid #1f3560}
+header b{font:700 16px system-ui,sans-serif}
+.dot{width:10px;height:10px;border-radius:50%;background:#3a4660;display:inline-block;margin-right:6px}
+.dot.on{background:#e3262f;animation:b 1.2s infinite}@keyframes b{50%{opacity:.2}}
+.dot.err{background:#c99700}
+select,button{background:#132647;color:#e8eef8;border:1px solid #2a4577;border-radius:6px;padding:5px 9px;font:13px system-ui,sans-serif}
+#meta{color:#8fa0bd;font:13px system-ui,sans-serif;margin-left:auto}
+pre{margin:0;padding:16px;white-space:pre-wrap;word-break:break-word}
+.k{color:#8fb6ff}.s{color:#a5e3a1}.n{color:#ffc83d}.b{color:#f08f8f}
+.chg{background:rgba(255,200,61,.25);border-radius:3px;transition:background 3s}
+</style></head><body>
+<header><span><span class="dot" id="dot"></span><b>개표 API 실시간 보기</b></span>
+<select id="sel"></select>
+<label style="font:13px system-ui"><input type="checkbox" id="auto" checked> 자동 갱신</label>
+<button id="now">지금 갱신</button><span id="meta">불러오는 중</span></header>
+<pre id="out"></pre>
+<script>
+const EP=['results.json','localities.json','parties.json','status.json'];
+const sel=document.getElementById('sel'), out=document.getElementById('out'), meta=document.getElementById('meta'), dot=document.getElementById('dot');
+const cur=(new URLSearchParams(location.search).get('f'))||'results.json';
+[...new Set([cur,...EP])].forEach(p=>sel.add(new Option(p,p,false,p===cur)));
+sel.onchange=()=>{ history.replaceState(null,'','?f='+sel.value); prev=null; load(); };
+let prev=null, timer, left=0, es=null; const SEC=30;
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function paint(obj){
+  const now={}, pad=n=>'  '.repeat(n);
+  function val(v,path){
+    now[path]=v; const hit=prev&&prev[path]!==undefined&&prev[path]!==v;
+    const cls=typeof v==='string'?'s':typeof v==='number'?'n':'b';
+    return '<span class="'+cls+(hit?' chg':'')+'">'+esc(JSON.stringify(v))+'</span>';
+  }
+  function walk(o,path,d){
+    if(o===null||typeof o!=='object') return val(o,path);
+    const arr=Array.isArray(o), ks=Object.keys(o);
+    if(!ks.length) return arr?'[]':'{}';
+    const items=ks.map(k=>pad(d+1)+(arr?'':'<span class="k">'+esc(JSON.stringify(k))+'</span>: ')+walk(o[k],path+'.'+k,d+1));
+    return (arr?'[':'{')+'\n'+items.join(',\n')+'\n'+pad(d)+(arr?']':'}');
+  }
+  out.innerHTML=walk(obj,'',0); prev=now;
+}
+async function load(){
+  try{
+    const u=new URL(sel.value,location.href); u.searchParams.set('t',Date.now());
+    const r=await fetch(u,{cache:'no-store'}); const j=await r.json(); paint(j);
+    dot.className='dot '+(j.status==='counting'?'on':''); meta.dataset.t=new Date().toLocaleTimeString('ko-KR');
+  }catch(e){ dot.className='dot err'; meta.dataset.t='오류: '+e.message; }
+  left=SEC; tick();
+}
+function tick(){ meta.textContent=(meta.dataset.t||'')+(document.getElementById('auto').checked?' · '+left+'초 뒤 갱신':' · 자동 갱신 꺼짐'); }
+setInterval(()=>{ if(!document.getElementById('auto').checked) return tick(); left--; if(left<=0) load(); else tick(); },1000);
+document.getElementById('now').onclick=load;
+document.getElementById('auto').onchange=tick;
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
+load();
+</script></body></html>

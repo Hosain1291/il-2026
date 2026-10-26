@@ -1,0 +1,42 @@
+name: 개표 API 갱신
+
+# 개표 데이터를 받아 api/*.json 을 갱신하고 커밋 → GitHub Pages가 그대로 API로 제공
+#   https://hosain1291.github.io/il-2026/api/results.json
+# 15분마다 시작해서, 투표 종료 후에는 한 번 실행될 때 50분 동안 1분 간격으로 계속 갱신
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: api
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    steps:
+      - uses: actions/checkout@v4
+      - name: 1분 간격으로 갱신
+        run: |
+          git config user.name "il-2026-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          end=$(( $(date +%s) + 50*60 ))
+          while :; do
+            out=$(python3 scripts/build_api.py) || out="ERROR"
+            echo "$(date -u +%H:%M:%S) $out"
+            if [ -n "$(git status --porcelain api)" ]; then
+              git add api
+              git commit -qm "API 갱신 $(date -u +%H:%M:%S)"
+              git pull -q --rebase origin main && git push -q origin HEAD:main || echo "push 실패, 다음 회차에 재시도"
+            fi
+            now=$(date -u +%Y%m%d%H%M)
+            # 투표 종료(2026-10-27 20:00 UTC) 전이나 결과 확정 이후(11월 5일)에는 한 번만 확인하고 끝냄
+            if [ "$now" -lt 202610271945 ] || [ "$now" -gt 202611051200 ]; then break; fi
+            [ "$(date +%s)" -ge "$end" ] && break
+            sleep 60
+          done

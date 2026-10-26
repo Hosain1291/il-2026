@@ -305,6 +305,7 @@ const CONFIG = {
   // 앞에서부터 차례로 시도하고, 성공한 주소를 계속 씀
   sources: Q.get('src') ? [Q.get('src')] : [
     'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',  // GitHub 원본
+    'api/results.json',                                                                         // 내 레포 API(GitHub Actions가 갱신)
     'https://johnnoto.github.io/israel-election-watcher/data/live.json',                        // GitHub Pages 사본
     'https://cdn.jsdelivr.net/gh/johnnoto/israel-election-watcher@main/data/live.json',         // jsDelivr 사본(갱신 느림)
   ],

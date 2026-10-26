@@ -1,0 +1,148 @@
+{
+  "threshold": 0.0325,
+  "seats": 120,
+  "agreements": [
+    [
+      "מחל",
+      "ט"
+    ],
+    [
+      "שס",
+      "ג"
+    ],
+    [
+      "דרך",
+      "אמת"
+    ],
+    [
+      "רק",
+      "ל"
+    ],
+    [
+      "ודם",
+      "עם"
+    ]
+  ],
+  "parties": [
+    {
+      "letter": "מחל",
+      "id": "likud",
+      "name": "리쿠드",
+      "name_en": "Likud",
+      "leader": "네타냐후",
+      "bloc": "gov"
+    },
+    {
+      "letter": "ב",
+      "id": "otzma",
+      "name": "오츠마 예후디트",
+      "name_en": "Otzma Yehudit",
+      "leader": "벤그비르",
+      "bloc": "gov"
+    },
+    {
+      "letter": "ט",
+      "id": "rzp",
+      "name": "종교시온주의당·제후트",
+      "name_en": "Religious Zionism–Zehut",
+      "leader": "스모트리치",
+      "bloc": "gov"
+    },
+    {
+      "letter": "שס",
+      "id": "shas",
+      "name": "샤스",
+      "name_en": "Shas",
+      "leader": "데리",
+      "bloc": "gov"
+    },
+    {
+      "letter": "ג",
+      "id": "utj",
+      "name": "토라유대교연합",
+      "name_en": "United Torah Judaism",
+      "leader": "골드크노프",
+      "bloc": "gov"
+    },
+    {
+      "letter": "רק",
+      "id": "together",
+      "name": "베야하드",
+      "name_en": "Together",
+      "leader": "베네트",
+      "bloc": "opp"
+    },
+    {
+      "letter": "דרך",
+      "id": "yashar",
+      "name": "야샤르",
+      "name_en": "Yashar",
+      "leader": "아이젠코트",
+      "bloc": "opp"
+    },
+    {
+      "letter": "כן",
+      "id": "bluewhite",
+      "name": "청백당",
+      "name_en": "Blue and White",
+      "leader": "간츠",
+      "bloc": "opp"
+    },
+    {
+      "letter": "אמת",
+      "id": "democrats",
+      "name": "민주당",
+      "name_en": "The Democrats",
+      "leader": "골란",
+      "bloc": "opp"
+    },
+    {
+      "letter": "ל",
+      "id": "yb",
+      "name": "이스라엘 베이테누",
+      "name_en": "Yisrael Beiteinu",
+      "leader": "리베르만",
+      "bloc": "opp"
+    },
+    {
+      "letter": "די",
+      "id": "reservists",
+      "name": "예비군·경제당",
+      "name_en": "The Reservists",
+      "leader": "헨델",
+      "bloc": "opp"
+    },
+    {
+      "letter": "ך",
+      "id": "amcha",
+      "name": "암차 이스라엘",
+      "name_en": "Amcha Yisrael",
+      "leader": "빈터",
+      "bloc": "opp"
+    },
+    {
+      "letter": "ודם",
+      "id": "joint",
+      "name": "공동명부",
+      "name_en": "Joint List",
+      "leader": "자바린",
+      "bloc": "opp"
+    },
+    {
+      "letter": "עם",
+      "id": "raam",
+      "name": "라암",
+      "name_en": "Ra'am",
+      "leader": "압바스",
+      "bloc": "opp"
+    },
+    {
+      "letter": "ני",
+      "id": "noam",
+      "name": "노암",
+      "name_en": "Noam",
+      "leader": "마오즈",
+      "bloc": "opp"
+    }
+  ]
+}
