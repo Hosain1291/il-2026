@@ -95,7 +95,8 @@ html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-fami
 .cols{display:flex;align-items:flex-end;gap:14px;height:500px;padding:0 10px;border-bottom:3px solid rgba(255,255,255,.5)}
 .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
 .col .v{font:700 52px 'Cafe24ProSlim';margin-bottom:8px}
-.col .bar{width:100%;max-width:110px;transition:height 1s;box-shadow:0 0 30px rgba(0,0,0,.4) inset}
+.col .cn{display:none}
+.col .bar{width:100%;max-width:110px;height:calc(var(--p)*420px);transition:height 1s,width 1s;box-shadow:0 0 30px rgba(0,0,0,.4) inset}
 .colnames{display:flex;gap:14px;padding:12px 10px 0}
 .colnames div{flex:1;text-align:center;font-size:21px;font-weight:700;line-height:1.2;word-break:keep-all}
 .colnames small{display:block;font-size:16px;font-weight:400;color:var(--muted)}
@@ -153,6 +154,75 @@ html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-fami
 .status{position:absolute;left:900px;bottom:14px;font-size:20px;color:var(--muted)}
 .banner{position:absolute;left:50%;top:136px;transform:translateX(-50%);background:rgba(160,119,0,.92);padding:10px 26px;font-size:22px;font-weight:700;display:none;max-width:1500px;text-align:center;z-index:5}
 .hint{position:fixed;left:50%;top:12px;transform:translateX(-50%);font:13px 'Cafe24ProSlim',sans-serif;color:#cfd8e8;background:rgba(0,0,0,.6);padding:4px 12px;border-radius:4px;z-index:10;transition:opacity 1s}
+
+/* ================= 세로 화면(모바일) — 1080×1920 무대 ================= */
+body.portrait .bug{left:40px;top:40px;height:96px}
+body.portrait .bug .ttl b{font-size:38px}
+body.portrait .counter{left:40px;right:40px;top:186px;height:110px}
+body.portrait .counter > div{flex:1}
+body.portrait .counter .cnt b{font-size:64px}
+body.portrait .counter b{font-size:52px}
+body.portrait .counter .prog{width:100%}
+body.portrait .banner{top:318px;max-width:1000px;font-size:24px}
+body.portrait .scene{left:40px;right:40px;top:336px;bottom:340px}
+body.portrait .stitle{font-size:44px;margin-bottom:30px}
+body.portrait .stitle small{display:block;font-size:22px}
+/* 장면 1 */
+body.portrait .headline{position:static;transform:none;display:block;text-align:center;font-size:52px;white-space:normal}
+body.portrait .vs{grid-template-columns:1fr 1fr;row-gap:30px;margin-top:60px}
+body.portrait .vs .mid{grid-column:1 / -1;grid-row:2;display:flex;align-items:baseline;justify-content:center;gap:18px}
+body.portrait .mid .m2{font-size:90px}
+body.portrait .side .lab{font-size:56px}
+body.portrait .side .big{font-size:250px}
+body.portrait .side .who{font-size:24px}
+body.portrait .blocs{height:100px;margin-top:70px}
+body.portrait .blocs div{font-size:48px}
+body.portrait div[style*="height:110px"]{display:none}
+/* 의석 배치도 */
+body.portrait .plan{grid-template-columns:1fr;grid-template-rows:640px auto;height:auto;gap:30px}
+body.portrait .seatmap{grid-row:1}
+body.portrait .seatmap svg{max-height:500px}
+body.portrait .seatmap .ctr{bottom:156px;font-size:60px}
+body.portrait .seatmap .ctr small{display:none}
+body.portrait .legend{grid-row:2;display:grid;grid-template-columns:1fr 1fr;column-gap:40px;row-gap:6px}
+body.portrait .legend .g{grid-column:1 / -1;font-size:30px;margin-top:10px}
+body.portrait .legend .it{font-size:26px;grid-template-columns:24px 1fr 60px}
+body.portrait .legend .it i{width:24px;height:24px}
+body.portrait .legend .it b{font-size:32px}
+/* 정당별 의석: 가로 막대로 */
+body.portrait .cols{flex-direction:column;align-items:stretch;height:auto;gap:12px;border:none;padding:0}
+body.portrait .col{flex-direction:row;align-items:center;justify-content:flex-start;height:62px;gap:16px}
+body.portrait .col .cn{display:block;width:300px;flex:none;font-size:30px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.portrait .col .bar{order:2;max-width:none;height:48px;width:calc(var(--p)*560px)}
+body.portrait .col .v{order:3;font-size:46px;margin:0}
+body.portrait .colnames{display:none}
+/* 득표율 */
+body.portrait .rows{grid-template-columns:1fr;gap:10px}
+body.portrait .row{grid-template-columns:300px 1fr 140px;height:66px}
+body.portrait .row .nm{font-size:30px}
+body.portrait .row .pc{font-size:44px}
+body.portrait .thrnote{font-size:24px}
+/* 정당 카드 */
+body.portrait .cards{grid-template-columns:repeat(3,1fr);gap:14px}
+body.portrait .card{height:236px}
+body.portrait .card .nm{font-size:30px}
+body.portrait .card .st{font-size:96px}
+/* 하단 */
+body.portrait .lower{bottom:110px;height:150px}
+body.portrait .strap{left:40px;right:40px;height:80px}
+body.portrait .strap .k{font-size:30px}
+body.portrait .strap .t{font-size:30px;text-overflow:ellipsis}
+body.portrait .ticker{left:40px;right:40px;top:80px;height:64px}
+body.portrait .ticker .tt{font-size:30px}
+body.portrait .dots{left:40px;right:40px;bottom:40px;justify-content:space-between}
+body.portrait .dots button{font-size:26px;padding:10px 12px 12px;flex:1;text-align:center}
+body.portrait .status{display:none}
+body.portrait .clock{right:40px;bottom:auto;top:40px;font-size:20px;text-align:right;line-height:1.15}
+body.portrait .clock b{display:block;margin:0 0 4px;font-size:28px}
+body.portrait .nav{top:336px;bottom:340px;width:70px}
+body.portrait .scene[data-name="여야 의석"].on{display:flex;flex-direction:column;justify-content:center;padding-bottom:80px}
+body.portrait ~ .hint, body.portrait .hint{display:none}
+@media (hover:none){.hint{display:none}.nav{opacity:0 !important}}
 </style>
 </head>
 <body>
@@ -413,8 +483,8 @@ function render(d){
   // 장면 2
   const top = main.slice(0, 15);
   const maxS = Math.max(...top.map(p=>p.seats), 10);
-  $('cols').innerHTML = top.map(p=>`<div class="col"><div class="v">${p.seats}</div>
-    <div class="bar" style="height:${p.seats/maxS*420}px;background:linear-gradient(180deg,${p.m.color},${p.m.color}cc)"></div></div>`).join('');
+  $('cols').innerHTML = top.map(p=>`<div class="col" style="--p:${p.seats/maxS}"><div class="cn">${p.m.name}</div><div class="v">${p.seats}</div>
+    <div class="bar" style="background:linear-gradient(180deg,${p.m.color},${p.m.color}cc)"></div></div>`).join('');
   $('colnames').innerHTML = top.map(p=>`<div>${p.m.name}<small>${p.m.leader||''}</small></div>`).join('');
 
   // 장면 3
@@ -498,7 +568,24 @@ document.addEventListener('keydown', e=>{
 });
 
 /* ===== 16:9 무대 크기 맞춤 ===== */
-function fit(){ const k=Math.min(innerWidth/1920, innerHeight/1080); $('stage').style.transform=`translate(-50%,-50%) scale(${k})`; }
+function fit(){
+  const portrait = innerWidth/innerHeight < 0.9;            // 세로 화면이면 1080×1920 무대
+  document.body.classList.toggle('portrait', portrait);
+  // 세로 화면은 폭 1080 기준으로 화면 비율에 맞춰 높이를 늘려 위아래 검은 띠가 생기지 않게 함
+  const W = portrait ? 1080 : 1920;
+  const H = portrait ? Math.max(1700, Math.round(1080*innerHeight/innerWidth)) : 1080;
+  $('stage').style.width = W+'px'; $('stage').style.height = H+'px';
+  const k = Math.min(innerWidth/W, innerHeight/H);
+  $('stage').style.transform=`translate(-50%,-50%) scale(${k})`;
+}
+// 모바일: 좌우로 밀어서 장면 넘기기
+let tx=null, ty=null;
+addEventListener('touchstart', e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
+addEventListener('touchend', e=>{
+  if(tx==null) return;
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; tx=null;
+  if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) show(dx<0 ? (cur+1)%scenes.length : (cur-1+scenes.length)%scenes.length);
+}, {passive:true});
 addEventListener('resize', fit); fit();
 
 function clocks(){
