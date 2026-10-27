@@ -327,6 +327,26 @@ body.portrait .card .st{font-size:80px !important}
 .row .nm small{display:block;font-size:17px;font-weight:400;color:var(--muted);line-height:1.1}
 .row{height:58px}
 
+
+/* 출구조사 표 */
+.pwrap{overflow:hidden}
+.ptab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.ptab th{font-size:20px;font-weight:700;padding:6px 6px 8px;border-bottom:3px solid #fff;text-align:center;white-space:nowrap}
+.ptab th small{display:block;font-size:14px;font-weight:400;color:var(--muted)}
+.ptab th.l,.ptab td.l{text-align:left}
+.ptab td{font-size:26px;font-weight:700;text-align:center;padding:4px 6px;border-bottom:1px solid #23262e}
+.ptab td.l{font-size:22px;white-space:nowrap}
+.ptab td.l i{display:inline-block;width:16px;height:16px;margin-right:10px;vertical-align:-1px}
+.ptab .avg{background:rgba(226,0,26,.18);color:#fff}
+.ptab tr.sum td{font-size:22px;border-top:2px solid #444}
+.ptab tr.sum.coal td{color:#8fb6ff}.ptab tr.sum.opp td{color:var(--opp)}.ptab tr.sum.mid td{color:var(--mid)}
+body.portrait .ptab th{font-size:18px;padding:4px 2px 6px}
+body.portrait .ptab th small{font-size:12px}
+body.portrait .ptab td{font-size:30px;padding:6px 2px}
+body.portrait .ptab th{font-size:22px}
+body.portrait .ptab td.l{font-size:26px}
+body.portrait .ptab td.l{font-size:20px}
+.status .auto{color:#6f7787;margin-left:8px}
 </style>
 </head>
 <body>
@@ -369,6 +389,12 @@ body.portrait .card .st{font-size:80px !important}
     <div class="thrnote" id="thrNote">금색 점선 = 봉쇄조항 3.25%. 이 선을 넘지 못한 정당은 의석을 받지 못합니다.</div>
   </section>
 
+  <section class="scene" data-name="출구조사">
+    <div class="stitle">방송사 출구조사 <small>의석 예측 · 평균은 소수 첫째 자리</small></div>
+    <div class="pwrap"><table class="ptab" id="ptab"></table></div>
+    <div class="thrnote" id="pnote"></div>
+  </section>
+
   <section class="scene" data-name="정당 현황">
     <div class="stitle">주요 정당 현황</div>
     <div class="cards" id="cards"></div>
@@ -380,7 +406,7 @@ body.portrait .card .st{font-size:80px !important}
   </div>
   <div class="nav prev" id="navPrev"><span>‹</span></div><div class="nav next" id="navNext"><span>›</span></div>
   <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><div class="dots" id="dots"></div></div>
-  <div class="status" id="statusText">불러오는 중</div>
+  <div class="status"><span id="statusText">불러오는 중</span> <span class="auto" id="autoTxt"></span></div>
   <div class="clock">서울<b id="clkSeoul">--:--:--</b>예루살렘<b id="clkJer">--:--:--</b></div>
 </div>
 <div class="hint">아래 탭·화면 양옆으로 장면 이동 · ❚❚ 버튼(스페이스)으로 멈춤/재생 · F 전체 화면</div>
@@ -410,7 +436,7 @@ const CONFIG = {
     'https://johnnoto.github.io/israel-election-watcher/data/live.json',                        // GitHub Pages 사본
     'https://cdn.jsdelivr.net/gh/johnnoto/israel-election-watcher@main/data/live.json',         // jsDelivr 사본(갱신 느림)
   ],
-  refreshSec: 30,             // 자동 갱신 주기(초) — 페이지 새로고침 없이 데이터만 다시 받습니다
+  refreshSec: 15,             // 자동 갱신 주기(초) — 페이지 새로고침 없이 데이터만 다시 받습니다
   seats: 120,
   threshold: 0.0325,
   totalEligible: 7_331_981,  // 전체 유권자 수 — 개표율 계산용
@@ -516,13 +542,27 @@ function adaptWatcher(j){
            eligible:n.r, voted:n.t, valid: n.v.reduce((a,b)=>a+b,0), parties, cecTime: j.cec_time };
 }
 
+/* 출구조사 방송사 이름 */
+const BROADCASTERS = { 'חדשות 12':'채널12', 'חדשות 13':'채널13', 'כאן 11':'칸11(공영)', 'i24NEWS':'i24뉴스', 'ערוץ 14':'채널14', 'חדשות 16':'채널16' };
+/* 방송사별 출구조사 평균: 소수 평균(dec)과 120석에 맞춘 정수(int, 최대 잔여 방식) */
+function pollAverage(polls){
+  const letters = [...new Set(polls.flatMap(p=>Object.keys(p.seats)))];
+  const dec = Object.fromEntries(letters.map(l=>[l, polls.reduce((a,p)=>a+(+p.seats[l]||0),0)/polls.length]));
+  const total = Math.round(Object.values(dec).reduce((a,b)=>a+b,0));
+  const int = Object.fromEntries(letters.map(l=>[l, Math.floor(dec[l])]));
+  let left = total - Object.values(int).reduce((a,b)=>a+b,0);
+  letters.slice().sort((a,b)=>(dec[b]-Math.floor(dec[b]))-(dec[a]-Math.floor(dec[a]))).forEach(l=>{ if(left>0){ int[l]++; left--; } });
+  return { dec, int };
+}
+
 /* navonyaniv/election-il-2026 results.json 변환
  *  country = [유권자, 투표자, 무효, 유효, 정당별 득표]  · turnout = {time, pct} (투표 중 시간대별 투표율)
  *  정당별 득표는 [[기호, 표], ...] 또는 상위 parties(기호 목록) 순서의 숫자 배열 — 둘 다 처리 */
 function adaptNavon(j){
   const turnout = j.turnout && j.turnout.pct!=null ? { pct:+j.turnout.pct, time:j.turnout.time } : null;
   if(turnout){                                   // 인사이트 문구에서 2022년 같은 시각 투표율 꺼내기
-    const ins = (j.insights||[]).find(x=>x && x.kind==='turnout-national');
+    const ins = (j.insights||[]).find(x=>x && (x.kind==='turnout-final' || x.kind==='turnout-national'));
+    if(ins && ins.kind==='turnout-final') turnout.final = true;
     const m = ins && /2022[^0-9]*?([\d.]+)%/.exec(ins.text||'');
     if(m) turnout.prev = +m[1];
   }
@@ -536,7 +576,14 @@ function adaptNavon(j){
     else parties.push({ letter:keyOf((j.parties||[])[i]).trim(), votes:+x||0 });
   });
   const valid = +c[3] || parties.reduce((a,p)=>a+p.votes,0);
-  const base = { turnout, updated: j.updated ? new Date(j.updated) : new Date() };
+  const polls = (j.polls||[]).filter(p=>p && p.seats).map(p=>({ src: BROADCASTERS[p.src] || p.src, time: String(p.time||'').replace('(מעודכן)','(갱신)'), seats: p.seats }));
+  const base = { turnout, polls, updated: j.updated ? new Date(j.updated) : new Date() };
+  if(!valid && polls.length && Date.now() >= POLLS_CLOSE && !j.rehearsal){       // 개표 전: 출구조사 평균으로 표시
+    const avg = pollAverage(polls);
+    const ps = Object.values(PARTIES).map(m=>({letter:m.letters[0], votes:0}));
+    for(const l of Object.keys(avg.int)) if(!ps.some(p=>p.letter===l)) ps.push({letter:l, votes:0});
+    return { ...base, exit:true, fixedSeats: avg.int, avgSeats: avg.dec, countedPct:0, eligible:0, voted:0, valid:0, parties: ps };
+  }
   if(!valid) return { pre:true, ...base };
   if(j.rehearsal) return { pre:true, test:true, ...base };
   if(Date.now() < POLLS_CLOSE) return { pre:true, test:true, ...base };
@@ -648,10 +695,13 @@ function rollTo(id, to, dec=0, suffix=''){
 
 function render(d){
   d = {...d, parties: d.parties.map(p=>({...p, ballot:p.letter, letter: resolveId(p)}))};
-  const { seats, thrVotes } = allocate(d.parties, d.valid);
+  const { seats: calc, thrVotes } = allocate(d.parties, d.valid);
+  const byId = o => Object.fromEntries(Object.entries(o||{}).map(([l,n])=>[resolveId({letter:l}),n]));
+  const seats = d.fixedSeats ? byId(d.fixedSeats) : calc;
+  const avgSeats = byId(d.avgSeats);
   const list = d.parties.map(p=>({...p, m:meta(p), seats:seats[p.letter]||0, share:d.valid? p.votes/d.valid*100 : 0}))
                         .sort((a,b)=> b.seats-a.seats || b.votes-a.votes);
-  const has = d.valid > 0;
+  const has = d.valid > 0 || !!d.fixedSeats;
   const main = list.filter(p=>PARTIES[p.letter] || p.seats);
 
   rollTo('kCounted', +(d.countedPct||0).toFixed(1), 1, '%');
@@ -664,7 +714,7 @@ function render(d){
   odoTo('sCoal', bs.coal); odoTo('sOpp', bs.opp); odoTo('sMid', bs.mid + bs.oth);
   let hl = '개표 시작을 기다리고 있습니다';
   if(has) hl = bs.coal>=61 ? `여당 과반 확보 예상` : bs.opp>=61 ? `야당 과반 확보 예상` : `과반 확보한 쪽 없음`;
-  $('headline').textContent = hl;
+  $('headline').textContent = d.exit && has ? '출구조사 · ' + hl : hl;
   const blocHTML = (has ? ['coal','mid','oth','opp'].map(b=>
     `<div style="flex:${bs[b]||0.0001};background:${BLOCS[b].color}">${bs[b]?bs[b]:''}</div>`).join('') : '')
     + '<div class="maj"><span>과반 61석</span></div>';
@@ -704,24 +754,47 @@ function render(d){
       <span class="tag" style="background:${BLOCS[p.m.bloc].color}">${p.m.tag||BLOCS[p.m.bloc].label}</span>
       <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||''}</div>
       <div class="st">${odo('card'+p.letter,p.seats)}<small> 석</small></div>
-      <div class="vt"><span>득표 ${cnt('vt'+p.letter,p.votes,0,true)}표</span><b>${cnt('pct'+p.letter,+p.share.toFixed(2),2)}%</b></div></div>`;
+      <div class="vt">${d.exit ? `<span>출구조사 평균</span><b>${(avgSeats[p.letter]||0).toFixed(1)}석</b>` : `<span>득표 ${cnt('vt'+p.letter,p.votes,0,true)}표</span><b>${cnt('pct'+p.letter,+p.share.toFixed(2),2)}%</b>`}</div></div>`;
   }).join('');
   prevSeats = Object.fromEntries(list.map(p=>[p.letter,p.seats]));
 
   // 하단 띠 & 자막
   if(has){
     const lead = main[0];
-    $('strapK').textContent = `개표율 ${pctf(d.countedPct)}`;
-    $('strapT').textContent = `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석 예상`;
-    const items = main.filter(p=>p.votes>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> ${pctf(p.share)}</span>`);
+    $('strapK').textContent = d.exit ? '출구조사 평균' : `개표율 ${pctf(d.countedPct)}`;
+    $('strapT').textContent = (d.exit ? `방송사 ${d.polls.length}곳 평균 — ` : '') + `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석` + (d.exit ? '' : ' 예상');
+    const items = d.exit
+      ? main.filter(p=>p.seats>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> (출구조사)</span>`)
+      : main.filter(p=>p.votes>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> ${pctf(p.share)}</span>`);
     const key = items.join('');
     if(key!==tickerKey){ $('ticker').innerHTML = items.join(''); tickerKey=key; }
   }
   runCounters(); runOdos();
   $('live').className = 'live ' + (has && d.countedPct<100 ? '' : 'off');
-  $('statusText').textContent = has
+  if(d.polls) renderPolls(d.polls);
+  if(d.turnout) showTurnout(d.turnout);
+  const feedT = d.updated ? d.updated.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
+  $('statusText').textContent = d.exit ? `출구조사 평균 · 선관위 개표 대기 · 데이터 ${feedT} 기준` : has
     ? (d.countedPct>=100?'개표 완료 · ':'') + d.updated.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' 기준'
     : '개표 시작 전';
+}
+
+function showTurnout(t){
+  $('kTurnout').innerHTML = `${t.pct.toFixed(1)}%<small style="display:block;font-size:16px;color:var(--muted)">${t.final ? '최종' : (t.time||'') + ' 기준'}</small>`;
+}
+/* 출구조사 표 */
+function renderPolls(polls){
+  if(!polls.length){ $('ptab').innerHTML = ''; $('pnote').textContent = '아직 발표된 출구조사가 없습니다'; return; }
+  const avg = pollAverage(polls);
+  const letters = Object.keys(avg.dec).sort((a,b)=>avg.dec[b]-avg.dec[a]);
+  const nameOf = l => (PARTIES[resolveId({letter:l})]||{}).name || MINOR[l] || l;
+  const colorOf = l => (PARTIES[resolveId({letter:l})]||{}).color || '#6c7891';
+  const blocOf = l => (PARTIES[resolveId({letter:l})]||{}).bloc || 'oth';
+  const sumBloc = (seats,b) => letters.filter(l=>blocOf(l)===b).reduce((a,l)=>a+(+seats[l]||0),0);
+  $('ptab').innerHTML = `<tr><th class="l">정당</th>${polls.map(p=>`<th>${p.src}<small>${p.time}</small></th>`).join('')}<th class="avg">평균</th></tr>`
+    + letters.map(l=>`<tr><td class="l"><i style="background:${colorOf(l)}"></i>${nameOf(l)}</td>${polls.map(p=>`<td>${p.seats[l] ?? '–'}</td>`).join('')}<td class="avg">${avg.dec[l].toFixed(1)}</td></tr>`).join('')
+    + [['coal','여당'],['opp','야당'],['mid','아랍·제3지대·무소속']].map(([b,n])=>`<tr class="sum ${b}"><td class="l">${n} 합계</td>${polls.map(p=>`<td>${sumBloc(p.seats,b)}</td>`).join('')}<td class="avg">${sumBloc(avg.dec,b).toFixed(1)}</td></tr>`).join('');
+  $('pnote').textContent = '방송사 출구조사 의석 예측입니다. 선관위 개표 결과가 들어오면 메인 화면은 실제 개표로 바뀝니다.';
 }
 
 function emptyData(){
@@ -858,7 +931,7 @@ async function tick(){
       $('live').className='live off';
       if(d.turnout){                                     // 투표 진행 중: 선관위 시간대별 투표율 표시
         const t = d.turnout, cmp = t.prev!=null ? ` (2022년 같은 시각 ${t.prev.toFixed(1)}%)` : '';
-        $('kTurnout').innerHTML = `${t.pct.toFixed(1)}%<small style="display:block;font-size:16px;color:var(--muted)">${t.time||''} 기준</small>`;
+        showTurnout(t);
         $('statusText').textContent = `투표 진행 중 · ${t.time||''} 투표율 ${t.pct.toFixed(1)}%`;
         $('strapK').textContent = `투표율 ${t.pct.toFixed(1)}%`;
         $('strapT').textContent = `현지 ${t.time||''} 기준 전국 투표율 ${t.pct.toFixed(1)}%${cmp} · 투표 종료 한국시간 05:00`;
@@ -880,7 +953,12 @@ async function tick(){
 }
 let nextAt = 0, busy = false;
 async function loop(){ if(busy) return; busy=true; await tick(); busy=false; nextAt = Date.now()+CONFIG.refreshSec*1000; }
-setInterval(()=>{ clocks(); if(Date.now()>=nextAt) loop(); }, 1000);
+setInterval(()=>{
+  clocks();
+  if(Date.now()>=nextAt) loop();
+  const left = Math.max(0, Math.ceil((nextAt-Date.now())/1000));
+  $('autoTxt').textContent = busy ? '· 자동 갱신 중…' : `· ${left}초 뒤 자동 갱신`;
+}, 1000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loop(); });
 clocks(); loadPlan(); loop(); show(0);
 /* ===== 화면 꺼짐 방지 (Screen Wake Lock) =====
