@@ -32,8 +32,9 @@ PARTIES = {
     'ך':   ('amcha', '이스라엘 인민당', 'Amcha Yisrael', '윈터', 'opp'),
     'ודם': ('joint', '공동명부', 'Joint List', '자바린', 'mid'),
     'עם':  ('raam', '라암', "Ra'am", '압바스', 'mid'),
-    'ני':  ('noam', '노암', 'Noam', '마오즈', 'opp'),
+    'ני':  ('noam', '노암', 'Noam', '마오즈', 'mid'),
 }
+GROUP = {'joint': 'arab', 'raam': 'arab', 'bluewhite': 'third', 'reservists': 'third', 'noam': 'unaligned'}  # mid 진영 세부: 아랍 / 제3지대 / 무소속
 AGREEMENTS = [('מחל', 'ט'), ('שס', 'ג'), ('דרך', 'אמת'), ('רק', 'ל'), ('ודם', 'עם')]
 
 
@@ -100,7 +101,7 @@ def main():
         p = PARTIES.get(l)
         parties.append({
             'letter': l, 'id': p[0] if p else None, 'name': name(l), 'name_en': p[2] if p else None,
-            'leader': p[3] if p else None, 'bloc': p[4] if p else 'other', 'votes': n,
+            'leader': p[3] if p else None, 'bloc': p[4] if p else 'other', 'group': GROUP.get(p[0]) if p else None, 'votes': n,
             'share': round(n / valid * 100, 2) if valid else 0,
             'passed': l != 'OTHER' and valid > 0 and n >= valid * THRESHOLD, 'seats': seats.get(l, 0),
         })
@@ -139,7 +140,8 @@ def main():
         'results.json': results,
         'localities.json': {'status': status, 'updated': j.get('fetched_at'), 'count': len(locs), 'localities': locs},
         'parties.json': {'threshold': THRESHOLD, 'seats': SEATS, 'agreements': AGREEMENTS,
-                         'parties': [{'letter': l, 'id': p[0], 'name': p[1], 'name_en': p[2], 'leader': p[3], 'bloc': p[4]} for l, p in PARTIES.items()]},
+                         'blocs': {'gov': '여당', 'opp': '야당', 'mid': '아랍·제3지대·무소속'},
+                         'parties': [{'letter': l, 'id': p[0], 'name': p[1], 'name_en': p[2], 'leader': p[3], 'bloc': p[4], 'group': GROUP.get(p[0])} for l, p in PARTIES.items()]},
     }
     os.makedirs(OUT, exist_ok=True)
     changed = False

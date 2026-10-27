@@ -31,7 +31,7 @@ const CACHE_SECONDS = 30;
 
 const SEATS = 120, THRESHOLD = 0.0325, ELIGIBLE_TOTAL = 7331981;
 
-// 투표용지 기호 → 정당 정보 (bloc: gov 여당 / opp 야당 / mid 아랍·제3지대)
+// 투표용지 기호 → 정당 정보 (bloc: gov 여당 / opp 야당 / mid 아랍·제3지대·무소속 (group: arab / third / unaligned))
 const PARTIES = {
   'מחל': { id: 'likud',      ko: '리쿠드당',               en: 'Likud',                   leader: '네타냐후',   bloc: 'gov' },
   'ב':   { id: 'otzma',      ko: '유대의 힘',       en: 'Otzma Yehudit',           leader: '벤그비르',   bloc: 'gov' },
@@ -40,14 +40,14 @@ const PARTIES = {
   'ג':   { id: 'utj',        ko: '토라유대주의연합',        en: 'United Torah Judaism',    leader: '골드크노프', bloc: 'gov' },
   'רק':  { id: 'together',   ko: '비야하드',             en: 'Together',                leader: '베네트',     bloc: 'opp' },
   'דרך': { id: 'yashar',     ko: '야샤르당',               en: 'Yashar',                  leader: '아이젠코트', bloc: 'opp' },
-  'כן':  { id: 'bluewhite',  ko: '청백당',               en: 'Blue and White',          leader: '간츠',       bloc: 'mid' },
+  'כן':  { id: 'bluewhite',  ko: '청백당',               en: 'Blue and White',          leader: '간츠',       bloc: 'mid', group: 'third' },
   'אמת': { id: 'democrats',  ko: '민주당',               en: 'The Democrats',           leader: '골란',       bloc: 'opp' },
   'ל':   { id: 'yb',         ko: '이스라엘 베이테누',     en: 'Yisrael Beiteinu',        leader: '리베르만',   bloc: 'opp' },
-  'די':  { id: 'reservists', ko: '예비군당',         en: 'The Reservists',          leader: '헨델',       bloc: 'mid' },
+  'די':  { id: 'reservists', ko: '예비군당',         en: 'The Reservists',          leader: '헨델',       bloc: 'mid', group: 'third' },
   'ך':   { id: 'amcha',      ko: '이스라엘 인민당',         en: 'Amcha Yisrael',           leader: '윈터',       bloc: 'opp' },
-  'ודם': { id: 'joint',      ko: '공동명부',             en: 'Joint List',              leader: '자바린',     bloc: 'mid' },
-  'עם':  { id: 'raam',       ko: '라암',                 en: "Ra'am",                   leader: '압바스',     bloc: 'mid' },
-  'ני':  { id: 'noam',       ko: '노암',                 en: 'Noam',                    leader: '마오즈',     bloc: 'opp' },
+  'ודם': { id: 'joint',      ko: '공동명부',             en: 'Joint List',              leader: '자바린',     bloc: 'mid', group: 'arab' },
+  'עם':  { id: 'raam',       ko: '라암',                 en: "Ra'am",                   leader: '압바스',     bloc: 'mid', group: 'arab' },
+  'ני':  { id: 'noam',       ko: '노암',                 en: 'Noam',                    leader: '마오즈',     bloc: 'mid', group: 'unaligned' },
 };
 const AGREEMENTS = [['מחל', 'ט'], ['שס', 'ג'], ['דרך', 'אמת'], ['רק', 'ל'], ['ודם', 'עם']];
 
@@ -174,7 +174,7 @@ function summary(d) {
     const p = PARTIES[letter];
     return {
       letter, id: p?.id || null, name: p?.ko || (letter === 'OTHER' ? '군소정당 합계' : letter), name_en: p?.en || null,
-      leader: p?.leader || null, bloc: p?.bloc || 'other', votes: v,
+      leader: p?.leader || null, bloc: p?.bloc || 'other', group: p?.group || null, votes: v,
       share: valid ? +(v / valid * 100).toFixed(2) : 0,
       passed: letter !== 'OTHER' && valid > 0 && v >= valid * THRESHOLD, seats: seats[letter] || 0,
     };

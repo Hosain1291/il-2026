@@ -253,8 +253,8 @@ body.portrait .scene .stitle{align-self:flex-start}
     <div style="height:110px"></div>
     <div class="vs">
       <div class="side coal"><div class="lab">여당</div><div class="big num" id="sCoal">0</div><div class="who">리쿠드당 · 유대의 힘 · 종교시오니즘당 · 샤스 · 토라유대주의연합</div></div>
-      <div class="mid"><div class="m1">과반</div><div class="m2 num">61</div><div class="m3">전체 120석</div><div class="m4"><span>아랍·제3지대</span><b class="num" id="sMid">0</b></div></div>
-      <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">야샤르당 · 비야하드 · 민주당 · 이스라엘 베이테누 외</div></div>
+      <div class="mid"><div class="m1">과반</div><div class="m2 num">61</div><div class="m3">전체 120석</div><div class="m4"><span>아랍·제3지대·무소속</span><b class="num" id="sMid">0</b></div></div>
+      <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">야샤르당 · 비야하드 · 민주당 · 이스라엘 베이테누 · 이스라엘 인민당</div></div>
     </div>
     <div class="blocs" id="blocs"></div>
   </section>
@@ -324,7 +324,8 @@ const CONFIG = {
 
 /* 정당 메타데이터 — 투표용지 기호는 중앙선관위 공시(ynet·Israel Gazette 보도) 기준
  * 블록은 위키백과 여론조사 문서의 Gov. 집계(37대 정부 구성 정당)를 따름
- * bloc: 'coal'(여당) | 'opp'(야당) | 'oth'(군소정당) */
+ * bloc: 'coal'(여당) | 'opp'(야당) | 'mid'(아랍·제3지대·무소속) | 'oth'(목록 밖 군소정당)
+ *   제3지대: 위키백과 "third bloc" = 청백당, 예비군당(헨델) / 무소속: 25대 크네세트 Unaligned = 노암 */
 const PARTIES = {
   likud:      { name:'리쿠드당', leader:'네타냐후', color:'#2a6be0', bloc:'coal', letters:['מחל'] },
   otzma:      { name:'유대의 힘', leader:'벤그비르', color:'#e8a33a', bloc:'coal', letters:['ב'] },
@@ -333,14 +334,14 @@ const PARTIES = {
   utj:        { name:'토라유대주의연합', leader:'골드크노프', color:'#9aa4b2', bloc:'coal', letters:['ג'] },
   together:   { name:'비야하드', leader:'베네트', color:'#2fb5c9', bloc:'opp', letters:['רק'] },
   yashar:     { name:'야샤르당', leader:'아이젠코트', color:'#3a7d5c', bloc:'opp', letters:['דרך'] },
-  bluewhite:  { name:'청백당', leader:'간츠', color:'#3d6fd1', bloc:'mid', letters:['כן'] },
+  bluewhite:  { name:'청백당', leader:'간츠', color:'#3d6fd1', bloc:'mid', tag:'제3지대', letters:['כן'] },
   democrats:  { name:'민주당', leader:'골란', color:'#d6453d', bloc:'opp', letters:['אמת'] },
   yb:         { name:'이스라엘 베이테누', leader:'리베르만', color:'#5a9e2f', bloc:'opp', letters:['ל'] },
-  reservists: { name:'예비군당', leader:'헨델', color:'#b8925a', bloc:'mid', letters:['די'] },
+  reservists: { name:'예비군당', leader:'헨델', color:'#b8925a', bloc:'mid', tag:'제3지대', letters:['די'] },
   amcha:      { name:'이스라엘 인민당', leader:'윈터', color:'#93a83c', bloc:'opp', letters:['ך'] },
-  joint:      { name:'공동명부', leader:'자바린', color:'#b23a48', bloc:'mid', letters:['ודם'] },
-  raam:       { name:'라암', leader:'압바스', color:'#2e7d32', bloc:'mid', letters:['עם'] },
-  noam:       { name:'노암', leader:'마오즈', color:'#c47a4f', bloc:'opp', letters:['ני'] },
+  joint:      { name:'공동명부', leader:'자바린', color:'#b23a48', bloc:'mid', tag:'아랍', letters:['ודם'] },
+  raam:       { name:'라암', leader:'압바스', color:'#2e7d32', bloc:'mid', tag:'아랍', letters:['עם'] },
+  noam:       { name:'노암', leader:'마오즈', color:'#c47a4f', bloc:'mid', tag:'무소속', letters:['ני'] },
 };
 /* 의석 가능성이 낮은 나머지 23개 군소정당 — 기호 → 표시 이름 */
 const MINOR = { 'צדק':'샤르샤르','ד':'모두를 위한 동반자','צף':'해적당','י':'이스라엘 퍼스트','ה':'에덴동산','קה':'여성의 목소리',
@@ -357,7 +358,7 @@ function resolveId(p){
   return p.letter;
 }
 
-const BLOCS = { coal:{label:'여당', color:'var(--coal)'}, opp:{label:'야당', color:'var(--opp)'}, mid:{label:'아랍·제3지대', color:'var(--mid)'}, oth:{label:'군소정당', color:'var(--oth)'} };
+const BLOCS = { coal:{label:'여당', color:'var(--coal)'}, opp:{label:'야당', color:'var(--opp)'}, mid:{label:'아랍·제3지대·무소속', color:'var(--mid)'}, oth:{label:'군소정당', color:'var(--oth)'} };
 
 /* ================= 데이터 변환 (선관위 expc.csv) =================
  * 열: סמל ועדה, שם ישוב, סמל ישוב, בזב(유권자), מצביעים(투표자), פסולים(무효), כשרים(유효), 이후 정당 기호별 득표
@@ -492,7 +493,7 @@ function render(d){
     `<div class="it"><i style="background:${p.m.color}"></i><span>${p.m.name}</span><b>${p.seats}</b></div>`).join('');
   $('legend').innerHTML = `<div class="g" style="color:var(--coal)">여당<span class="num">${bs.coal}</span></div>${lg('coal')}`
     + `<div class="g" style="color:var(--opp)">야당<span class="num">${bs.opp}</span></div>${lg('opp')}`
-    + `<div class="g" style="color:var(--mid)">아랍·제3지대<span class="num">${bs.mid}</span></div>${lg('mid')}`
+    + `<div class="g" style="color:var(--mid)">아랍·제3지대·무소속<span class="num">${bs.mid}</span></div>${lg('mid')}`
     + (bs.oth ? `<div class="g" style="color:var(--oth)">군소정당<span class="num">${bs.oth}</span></div>${lg('oth')}` : '');
 
   // 장면 2
@@ -514,7 +515,7 @@ function render(d){
   $('cards').innerHTML = main.slice(0,15).map(p=>{
     const changed = has && prevSeats[p.letter]!==undefined && prevSeats[p.letter]!==p.seats;
     return `<div class="card ${has&&p.votes<thrVotes?'out':''} ${changed?'flash':''}" style="--c:${p.m.color}">
-      <span class="tag" style="background:${BLOCS[p.m.bloc].color}">${BLOCS[p.m.bloc].label}</span>
+      <span class="tag" style="background:${BLOCS[p.m.bloc].color}">${p.m.tag||BLOCS[p.m.bloc].label}</span>
       <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||''}</div>
       <div class="st">${p.seats}<small> 석</small></div><div class="pct">${pctf(p.share)}</div></div>`;
   }).join('');
@@ -524,7 +525,7 @@ function render(d){
   if(has){
     const lead = main[0];
     $('strapK').textContent = `개표율 ${pctf(d.countedPct)}`;
-    $('strapT').textContent = `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석 예상`;
+    $('strapT').textContent = `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석 예상`;
     const items = main.filter(p=>p.votes>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> ${pctf(p.share)}</span>`);
     const key = items.join('');
     if(key!==tickerKey){ $('ticker').innerHTML = items.join(''); tickerKey=key; }
