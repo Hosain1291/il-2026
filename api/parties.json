@@ -86,7 +86,7 @@
       "name": "청백당",
       "name_en": "Blue and White",
       "leader": "간츠",
-      "bloc": "opp"
+      "bloc": "mid"
     },
     {
       "letter": "אמת",
@@ -110,7 +110,7 @@
       "name": "예비군당",
       "name_en": "The Reservists",
       "leader": "헨델",
-      "bloc": "opp"
+      "bloc": "mid"
     },
     {
       "letter": "ך",
@@ -126,7 +126,7 @@
       "name": "공동명부",
       "name_en": "Joint List",
       "leader": "자바린",
-      "bloc": "opp"
+      "bloc": "mid"
     },
     {
       "letter": "עם",
@@ -134,7 +134,7 @@
       "name": "라암",
       "name_en": "Ra'am",
       "leader": "압바스",
-      "bloc": "opp"
+      "bloc": "mid"
     },
     {
       "letter": "ני",
