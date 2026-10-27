@@ -236,6 +236,70 @@ body:not(.portrait) .scene[data-name="여야 의석"].on{display:flex;flex-direc
 /* 세로로 긴 화면(폴드 커버 등): 모든 장면 내용을 가운데로 모아 빈 공간을 위아래로 나눔 */
 body.portrait .scene.on{display:flex;flex-direction:column;justify-content:center}
 body.portrait .scene .stitle{align-self:flex-start}
+
+/* ================= 방송 디자인 — 영국 총선 개표방송 풍 (다크 스튜디오 + 레드 포인트 + 플랫 그래픽) ================= */
+:root{ --gold:#ffffff; --live:#e2001a; --red:#e2001a; --ink:#ffffff; --muted:#a9b3c4; --glass:#14161c; --line:rgba(255,255,255,.12) }
+#stage{background:
+   radial-gradient(1200px 700px at 50% -10%, #1d2740 0%, transparent 60%),
+   linear-gradient(180deg,#0c0f16 0%,#07090d 100%) !important}
+#stage::before{opacity:.06 !important;background-size:120px 120px !important}
+/* 왼쪽 위 로고 블록 */
+.bug{filter:none}
+.bug .live{background:#fff !important;color:#0c0f16;letter-spacing:.04em}
+.bug .live i{background:var(--red)}
+.bug .live.off{background:#3a3f4a !important;color:#fff}
+.bug .ttl{background:var(--red) !important}
+.bug .ttl span{color:#ffd9de}
+/* 오른쪽 위 개표율 */
+.counter{filter:none;gap:0}
+.counter > div{background:#14161c;border:none;border-left:1px solid #2a2e38}
+.counter .cnt{background:#fff !important}
+.counter .cnt span{color:#5b6372}
+.counter .cnt b{color:#0c0f16 !important}
+.counter .prog{background:#e7e9ee}.counter .prog i{background:var(--red) !important}
+/* 장면 제목 */
+.stitle{background:none !important;padding:0 0 8px 0 !important;border-bottom:4px solid var(--red);text-transform:none}
+.stitle::before{display:none}
+.stitle small{color:var(--muted)}
+/* 여야 대결 */
+.headline{background:var(--red) !important;border:none !important;color:#fff;padding:12px 40px !important}
+.side .big{text-shadow:none !important}
+.side .lab{font-size:40px;letter-spacing:.02em}
+.side.coal .lab{color:var(--coal)}.side.opp .lab{color:var(--opp)}
+.mid .m2{color:#fff !important}
+.mid .m1,.mid .m3{color:var(--muted)}
+.mid .m4{border:none;background:var(--mid);color:#fff}
+.blocs{background:#14161c !important;border:none !important;height:96px}
+.blocs .maj{border-left:4px dashed #fff !important}
+.blocs .maj span{background:var(--red);color:#fff !important;padding:2px 10px;font-size:20px !important}
+/* 막대·표 */
+.cols{border-bottom:3px solid #fff}
+.col .bar{box-shadow:none !important}
+.row .tr,.sb .track{background:#14161c !important;border:none !important}
+.row .tr .thr{border-left:3px dashed #fff !important}
+.thrnote{color:var(--muted) !important}
+/* 정당 카드: 위쪽을 정당 색으로 채운 플랫 카드 */
+.card{background:#14161c !important;border:none !important;padding:0 !important;display:flex;flex-direction:column}
+.card::before{display:none}
+.card .nm{background:var(--c);color:#fff;padding:10px 16px 2px;font-size:26px}
+.card .ld{background:var(--c);color:rgba(255,255,255,.85);padding:0 16px 8px}
+.card .st{padding:6px 16px 0}
+.card .pct{right:16px;bottom:14px}
+.card .tag{top:12px !important;right:12px !important;background:rgba(0,0,0,.35) !important;color:#fff !important}
+.card .nm{padding-right:96px}
+.card.flash{animation:flashR 1.4s}
+@keyframes flashR{0%{box-shadow:0 0 0 5px var(--red)}100%{box-shadow:0 0 0 0 transparent}}
+/* 하단: 흰 띠 + 빨간 라벨, 아래 검은 속보 자막 */
+.strap{filter:none}
+.strap .k{background:var(--red) !important;color:#fff !important}
+.strap .t{background:#fff !important;color:#0c0f16 !important}
+.ticker{background:#0c0f16 !important;border-top:1px solid #23262e}
+.ticker .tl{background:#fff !important;color:var(--red) !important}
+.ticker .tt b{color:#fff !important}
+.dots button.on{border-top-color:rgba(226,0,26,.35) !important}
+.dots button.on::before{background:var(--red) !important}
+.legend .g{border-bottom:2px solid currentColor;padding-bottom:2px}
+.banner{background:var(--red) !important}
 </style>
 </head>
 <body>
