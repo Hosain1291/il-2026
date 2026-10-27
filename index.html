@@ -543,8 +543,8 @@ function adaptWatcher(j){
            eligible:n.r, voted:n.t, valid: n.v.reduce((a,b)=>a+b,0), parties, cecTime: j.cec_time };
 }
 
-/* 개표율이 이 값(%) 미만이면 의석은 출구조사 평균으로 보여 줌 — 극초반 개표는 지역이 치우쳐 의석 계산이 크게 틀림 */
-const EXIT_UNTIL = 10;
+/* 개표가 조금이라도 들어오면 바로 실제 개표로 의석 계산 (0 = 출구조사 대체 안 함). 출구조사는 '출구조사' 장면에서 따로 봄 */
+const EXIT_UNTIL = 0;
 
 /* 출구조사 방송사 이름 */
 const BROADCASTERS = { 'חדשות 12':'채널12', 'חדשות 13':'채널13', 'כאן 11':'칸11(공영)', 'i24NEWS':'i24뉴스', 'ערוץ 14':'채널14', 'חדשות 16':'채널16' };
@@ -729,7 +729,7 @@ function render(d){
   odoTo('sCoal', bs.coal); odoTo('sOpp', bs.opp); odoTo('sMid', bs.mid + bs.oth);
   let hl = '개표 시작을 기다리고 있습니다';
   if(has) hl = bs.coal>=61 ? `여당 과반 확보 예상` : bs.opp>=61 ? `야당 과반 확보 예상` : `과반 확보한 쪽 없음`;
-  $('headline').textContent = d.exit && has ? '출구조사 · ' + hl : hl;
+  $('headline').textContent = d.exit && has ? '출구조사 · ' + hl : (has && d.countedPct < 10 ? '개표 초반 · ' + hl : hl);
   const blocHTML = (has ? ['coal','mid','oth','opp'].map(b=>
     `<div style="flex:${bs[b]||0.0001};background:${BLOCS[b].color}">${bs[b]?bs[b]:''}</div>`).join('') : '')
     + '<div class="maj"><span>과반 61석</span></div>';
@@ -776,7 +776,7 @@ function render(d){
   // 하단 띠 & 자막
   if(has){
     const lead = main[0];
-    $('strapK').textContent = d.exit ? (d.countedPct > 0 ? `개표율 ${d.countedPct.toFixed(2)}%` : '출구조사 평균') : `개표율 ${pctf(d.countedPct)}`;
+    $('strapK').textContent = d.exit ? (d.countedPct > 0 ? `개표율 ${d.countedPct.toFixed(2)}%` : '출구조사 평균') : `개표율 ${d.countedPct>0 && d.countedPct<1 ? d.countedPct.toFixed(2)+'%' : pctf(d.countedPct)}`;
     $('strapT').textContent = (d.exit ? (d.countedPct > 0 ? `개표 초반이라 의석은 출구조사 평균 — ` : `주요 방송사 ${d.polls.filter(p=>p.primary).length || d.polls.length}곳 출구조사 평균 — `) : '') + `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석` + (d.exit ? '' : ' 예상');
     const items = d.exit
       ? main.filter(p=>p.seats>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> (출구조사)</span>`)
@@ -986,7 +986,29 @@ setInterval(()=>{
   $('autoTxt').textContent = busy ? '· 자동 갱신 중…' : `· ${left}초 뒤 자동 갱신`;
 }, 1000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loop(); });
-clocks(); loadPlan(); loop(); show(0);
+clocks(); loadPlan(); loop();
+/* 자동 새로고침 후 보던 장면·멈춤 상태 이어서 */
+(()=>{ let st=null; try{ st = JSON.parse(sessionStorage.getItem('il2026-view')||'null'); sessionStorage.removeItem('il2026-view'); }catch(e){}
+       show(st && st.scene < scenes.length ? st.scene : 0);
+       if(st && st.paused) setTimeout(()=>setPaused(true), 0); })();
+
+/* ===== 사이트 새 버전 자동 반영 =====
+ * 1분마다 이 페이지 파일을 다시 받아 바뀌었으면(새로 올린 버전) 스스로 새로고침. 보던 장면은 유지. */
+let pageSig = null;
+const sig = t => { let h = 0; for(let i=0;i<t.length;i++) h = (h*31 + t.charCodeAt(i))|0; return h + ':' + t.length; };
+async function checkNewVersion(){
+  try{
+    const r = await fetch(location.pathname + '?v=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) return;
+    const s = sig(await r.text());
+    if(pageSig === null){ pageSig = s; return; }
+    if(s !== pageSig){
+      try{ sessionStorage.setItem('il2026-view', JSON.stringify({scene:cur, paused})); }catch(e){}
+      location.reload();
+    }
+  }catch(e){}
+}
+checkNewVersion(); setInterval(checkNewVersion, 60*1000);
 /* ===== 화면 꺼짐 방지 (Screen Wake Lock) =====
  * 페이지를 보고 있는 동안 컴퓨터·휴대폰 화면이 자동으로 꺼지지 않게 함.
  * 다른 탭으로 가면 브라우저가 풀어 버리므로 돌아올 때 다시 요청. 일부 브라우저는 화면을 한 번 눌러야 켜짐. */
