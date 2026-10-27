@@ -329,13 +329,20 @@ body.portrait .card .st{font-size:80px !important}
 
 /* 일반/절전 버튼 */
 .mode{all:unset;cursor:pointer;padding:0 12px;display:flex;align-items:center;justify-content:center;background:#2a2e38;color:#fff;font:700 17px 'Cafe24ProSlim',sans-serif;border-top:4px solid transparent;white-space:nowrap}
-.mode.on{background:#1f7a4d}
 body.portrait .mode{font-size:24px;padding:0 16px}
-/* 절전 모드 */
-body.saver #stage{filter:brightness(.62)}
-body.saver *,body.saver *::before,body.saver *::after{animation:none !important;transition:none !important}
-body.saver .ticker .tt{padding-left:16px}
-body.saver .side .big{text-shadow:none}
+/* 화면 보호기 */
+.ssov{position:fixed;inset:0;background:#000;z-index:50;display:none;cursor:pointer}
+body.ss-on .ssov{display:block}
+body.ss-on #stage,body.ss-on .hint{visibility:hidden}
+.ssbox{position:absolute;padding:20px 26px;font-family:'Cafe24ProSlim',sans-serif;color:#d8dde6;text-align:center;transition:left 3s ease,top 3s ease;max-width:92vw}
+.ssh{font-size:clamp(14px,3.6vw,22px);color:#e2001a;font-weight:700;margin-bottom:4px}
+.ssn{font-size:clamp(64px,20vw,150px);font-weight:700;line-height:1;display:flex;gap:.18em;justify-content:center;align-items:baseline}
+.ssn .c{color:#2a6be0}.ssn .o{color:#5ec3f2}.ssn .m{color:#555;font-size:.6em}
+.ssl{display:flex;justify-content:space-between;gap:16px;font-size:clamp(12px,3.2vw,18px);color:#8a93a3;margin-top:4px}
+.ssl b{color:#3fae7a}
+.ssc{margin-top:12px;font-size:clamp(14px,3.6vw,22px)}
+.ssk{margin-top:4px;font-size:clamp(12px,3vw,17px);color:#8a93a3}
+.sst{margin-top:10px;font-size:12px;color:#444}
 </style>
 </head>
 <body>
@@ -388,10 +395,16 @@ body.saver .side .big{text-shadow:none}
     <div class="ticker"><div class="tl">속보</div><div class="tw"><div class="tt" id="ticker">개표가 시작되면 정당별 득표가 여기에 표시됩니다</div></div></div>
   </div>
   <div class="nav prev" id="navPrev"><span>‹</span></div><div class="nav next" id="navNext"><span>›</span></div>
-  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><button type="button" class="mode" id="modeBtn" aria-label="절전 모드로 바꾸기">일반</button><div class="dots" id="dots"></div></div>
+  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><button type="button" class="mode" id="modeBtn" aria-label="화면 보호기 켜기">화면보호</button><div class="dots" id="dots"></div></div>
   <div class="status" id="statusText">불러오는 중</div>
   <div class="clock">서울<b id="clkSeoul">--:--:--</b>예루살렘<b id="clkJer">--:--:--</b></div>
 </div>
+<div class="ssov" id="ss"><div class="ssbox" id="ssBox">
+  <div class="ssh" id="ssHead"></div>
+  <div class="ssn"><span class="c" id="ssCoal">0</span><span class="m">:</span><span class="o" id="ssOpp">0</span></div>
+  <div class="ssl"><span>여당</span><span>아랍·제3지대·무소속 <b id="ssMid">0</b></span><span>야당</span></div>
+  <div class="ssc" id="ssCount"></div><div class="ssk" id="ssClock"></div><div class="sst">화면을 누르면 돌아갑니다</div>
+</div></div>
 <div class="hint">아래 탭·화면 양옆으로 장면 이동 · ❚❚ 버튼(스페이스)으로 멈춤/재생 · F 전체 화면</div>
 
 <script>
@@ -611,7 +624,7 @@ function cnt(key, to, dec=0, comma=false){
 }
 function roll(el, from, to, dec){
   if(el._raf) cancelAnimationFrame(el._raf);
-  if(from === to || saver){ el.textContent = dec ? (+to).toFixed(dec) : (el.dataset.comma ? (+to).toLocaleString('ko-KR') : to); el.classList.remove('rolling'); return; }
+  if(from === to){ el.textContent = dec ? (+to).toFixed(dec) : (el.dataset.comma ? (+to).toLocaleString('ko-KR') : to); el.classList.remove('rolling'); return; }
   const t0 = performance.now();
   el.classList.add('rolling');
   const step = now => {
@@ -762,8 +775,7 @@ function paintPlan(order){
 
 /* ===== 장면 자동 전환 (방송 순서처럼 돌아감) ===== */
 const SCENE_SEC = 12;
-let saver = false;                                  // 절전 모드
-const sceneSec = () => saver ? 30 : SCENE_SEC;
+const sceneSec = () => SCENE_SEC;
 const scenes = [...document.querySelectorAll('.scene')];
 let cur = 0, sceneTimer;
 $('dots').innerHTML = scenes.map((s,i)=>`<button type="button" data-i="${i}">${s.dataset.name}</button>`).join('');
@@ -889,7 +901,7 @@ async function tick(){
   }
 }
 let nextAt = 0, busy = false;
-async function loop(){ if(busy) return; busy=true; await tick(); busy=false; nextAt = Date.now()+(saver?60:CONFIG.refreshSec)*1000; }
+async function loop(){ if(busy) return; busy=true; await tick(); busy=false; nextAt = Date.now()+CONFIG.refreshSec*1000; }
 setInterval(()=>{ clocks(); if(Date.now()>=nextAt) loop(); }, 1000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loop(); });
 clocks(); loadPlan(); loop(); show(0);
@@ -898,7 +910,7 @@ clocks(); loadPlan(); loop(); show(0);
  * 다른 탭으로 가면 브라우저가 풀어 버리므로 돌아올 때 다시 요청. 일부 브라우저는 화면을 한 번 눌러야 켜짐. */
 let wakeLock = null;
 async function keepAwake(){
-  if(saver || !('wakeLock' in navigator) || document.hidden || wakeLock) return;
+  if(!('wakeLock' in navigator) || document.hidden || wakeLock) return;
   try{
     wakeLock = await navigator.wakeLock.request('screen');
     wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
@@ -908,25 +920,50 @@ keepAwake();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) keepAwake(); });
 ['click','touchend','keydown'].forEach(ev=>addEventListener(ev, keepAwake, {passive:true}));
 
-/* ===== 일반 / 절전 모드 =====
- * 절전: 화면 꺼짐 허용, 화면 밝기 낮춤, 움직이는 효과(자막 흐름·깜빡임·숫자 굴림) 끔,
- *       데이터 확인 60초·장면 넘김 30초로 늘림. 선택은 이 기기에 기억. */
-function setSaver(on){
-  saver = on;
-  document.body.classList.toggle('saver', on);
-  const b = $('modeBtn');
-  b.textContent = on ? '절전' : '일반';
-  b.classList.toggle('on', on);
-  b.setAttribute('aria-label', on ? '일반 모드로 바꾸기' : '절전 모드로 바꾸기');
-  try{ localStorage.setItem('il2026-saver', on ? '1' : '0'); }catch(e){}
-  if(on){ if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; } }
-  else keepAwake();
-  if(!paused) schedule(sceneSec()*1000);
-  nextAt = Math.min(nextAt, Date.now() + (on?60:CONFIG.refreshSec)*1000);
+/* ===== 화면 보호기 =====
+ * [화면보호] 버튼을 누르거나, 휴대폰에서 3분 동안 손을 안 대면 켜짐.
+ * 검은 화면에 여야 의석·개표율·시각만 크게 띄우고, 화면이 타지 않게 위치를 천천히 옮김.
+ * 아무 곳이나 누르면 원래 화면으로 돌아옴. 숫자는 계속 자동 갱신. */
+const SS_IDLE = 3*60*1000;
+const isTouch = matchMedia('(hover:none)').matches;
+let ssOn = false, ssIdle = null, ssMove = null;
+function ssUpdate(){
+  if(!ssOn) return;
+  const g = id => ($(id) && $(id).textContent.trim()) || '0';
+  $('ssCoal').textContent = shown.sCoal ?? 0;
+  $('ssOpp').textContent  = shown.sOpp ?? 0;
+  $('ssMid').textContent  = shown.sMid ?? 0;
+  $('ssHead').textContent = $('headline').textContent;
+  const kt = $('kTurnout'), tMain = (kt.childNodes[0]?.textContent||'–').trim(), tSub = kt.querySelector('small')?.textContent;
+  $('ssCount').textContent = '개표율 ' + g('kCounted') + ' · 투표율 ' + tMain + (tSub ? ` (${tSub})` : '');
+  $('ssClock').textContent = '서울 ' + $('clkSeoul').textContent + '   예루살렘 ' + $('clkJer').textContent;
 }
-$('modeBtn').addEventListener('click', ()=>setSaver(!saver));
-(()=>{ let v=null; try{ v = localStorage.getItem('il2026-saver'); }catch(e){}
-       if(v==='1') setSaver(true); })();
+function ssPlace(){
+  const box = $('ssBox'), W = innerWidth, H = innerHeight, r = box.getBoundingClientRect();
+  box.style.left = Math.max(0, Math.random()*(W - r.width)) + 'px';
+  box.style.top  = Math.max(0, Math.random()*(H - r.height)) + 'px';
+}
+function ssStart(){
+  if(ssOn) return; ssOn = true;
+  document.body.classList.add('ss-on');
+  ssUpdate(); ssPlace();
+  ssMove = setInterval(()=>{ ssUpdate(); }, 1000);
+  ssMove.p = setInterval(ssPlace, 20000);
+}
+function ssStop(){
+  if(!ssOn) return; ssOn = false;
+  document.body.classList.remove('ss-on');
+  clearInterval(ssMove); clearInterval(ssMove && ssMove.p);
+  fit();
+}
+function ssArm(){
+  clearTimeout(ssIdle);
+  if(isTouch) ssIdle = setTimeout(ssStart, SS_IDLE);
+}
+$('modeBtn').addEventListener('click', e=>{ e.stopPropagation(); ssStart(); });
+$('ss').addEventListener('click', e=>{ e.stopPropagation(); ssStop(); ssArm(); });
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev, ()=>{ if(!ssOn) ssArm(); }, {passive:true}));
+ssArm();
 setTimeout(()=>document.querySelector('.hint').style.opacity=0, 6000);
 </script>
 </body>
