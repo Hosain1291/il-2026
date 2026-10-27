@@ -327,22 +327,6 @@ body.portrait .card .st{font-size:80px !important}
 .row .nm small{display:block;font-size:17px;font-weight:400;color:var(--muted);line-height:1.1}
 .row{height:58px}
 
-/* 일반/절전 버튼 */
-.mode{all:unset;cursor:pointer;padding:0 12px;display:flex;align-items:center;justify-content:center;background:#2a2e38;color:#fff;font:700 17px 'Cafe24ProSlim',sans-serif;border-top:4px solid transparent;white-space:nowrap}
-body.portrait .mode{font-size:24px;padding:0 16px}
-/* 화면 보호기 */
-.ssov{position:fixed;inset:0;background:#000;z-index:50;display:none;cursor:pointer}
-body.ss-on .ssov{display:block}
-body.ss-on #stage,body.ss-on .hint{visibility:hidden}
-.ssbox{position:absolute;padding:20px 26px;font-family:'Cafe24ProSlim',sans-serif;color:#d8dde6;text-align:center;transition:left 3s ease,top 3s ease;max-width:92vw}
-.ssh{font-size:clamp(14px,3.6vw,22px);color:#e2001a;font-weight:700;margin-bottom:4px}
-.ssn{font-size:clamp(64px,20vw,150px);font-weight:700;line-height:1;display:flex;gap:.18em;justify-content:center;align-items:baseline}
-.ssn .c{color:#2a6be0}.ssn .o{color:#5ec3f2}.ssn .m{color:#555;font-size:.6em}
-.ssl{display:flex;justify-content:space-between;gap:16px;font-size:clamp(12px,3.2vw,18px);color:#8a93a3;margin-top:4px}
-.ssl b{color:#3fae7a}
-.ssc{margin-top:12px;font-size:clamp(14px,3.6vw,22px)}
-.ssk{margin-top:4px;font-size:clamp(12px,3vw,17px);color:#8a93a3}
-.sst{margin-top:10px;font-size:12px;color:#444}
 </style>
 </head>
 <body>
@@ -395,16 +379,10 @@ body.ss-on #stage,body.ss-on .hint{visibility:hidden}
     <div class="ticker"><div class="tl">속보</div><div class="tw"><div class="tt" id="ticker">개표가 시작되면 정당별 득표가 여기에 표시됩니다</div></div></div>
   </div>
   <div class="nav prev" id="navPrev"><span>‹</span></div><div class="nav next" id="navNext"><span>›</span></div>
-  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><button type="button" class="mode" id="modeBtn" aria-label="화면 보호기 켜기">화면보호</button><div class="dots" id="dots"></div></div>
+  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><div class="dots" id="dots"></div></div>
   <div class="status" id="statusText">불러오는 중</div>
   <div class="clock">서울<b id="clkSeoul">--:--:--</b>예루살렘<b id="clkJer">--:--:--</b></div>
 </div>
-<div class="ssov" id="ss"><div class="ssbox" id="ssBox">
-  <div class="ssh" id="ssHead"></div>
-  <div class="ssn"><span class="c" id="ssCoal">0</span><span class="m">:</span><span class="o" id="ssOpp">0</span></div>
-  <div class="ssl"><span>여당</span><span>아랍·제3지대·무소속 <b id="ssMid">0</b></span><span>야당</span></div>
-  <div class="ssc" id="ssCount"></div><div class="ssk" id="ssClock"></div><div class="sst">화면을 누르면 돌아갑니다</div>
-</div></div>
 <div class="hint">아래 탭·화면 양옆으로 장면 이동 · ❚❚ 버튼(스페이스)으로 멈춤/재생 · F 전체 화면</div>
 
 <script>
@@ -920,50 +898,7 @@ keepAwake();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) keepAwake(); });
 ['click','touchend','keydown'].forEach(ev=>addEventListener(ev, keepAwake, {passive:true}));
 
-/* ===== 화면 보호기 =====
- * [화면보호] 버튼을 누르거나, 휴대폰에서 3분 동안 손을 안 대면 켜짐.
- * 검은 화면에 여야 의석·개표율·시각만 크게 띄우고, 화면이 타지 않게 위치를 천천히 옮김.
- * 아무 곳이나 누르면 원래 화면으로 돌아옴. 숫자는 계속 자동 갱신. */
-const SS_IDLE = 3*60*1000;
-const isTouch = matchMedia('(hover:none)').matches;
-let ssOn = false, ssIdle = null, ssMove = null;
-function ssUpdate(){
-  if(!ssOn) return;
-  const g = id => ($(id) && $(id).textContent.trim()) || '0';
-  $('ssCoal').textContent = shown.sCoal ?? 0;
-  $('ssOpp').textContent  = shown.sOpp ?? 0;
-  $('ssMid').textContent  = shown.sMid ?? 0;
-  $('ssHead').textContent = $('headline').textContent;
-  const kt = $('kTurnout'), tMain = (kt.childNodes[0]?.textContent||'–').trim(), tSub = kt.querySelector('small')?.textContent;
-  $('ssCount').textContent = '개표율 ' + g('kCounted') + ' · 투표율 ' + tMain + (tSub ? ` (${tSub})` : '');
-  $('ssClock').textContent = '서울 ' + $('clkSeoul').textContent + '   예루살렘 ' + $('clkJer').textContent;
-}
-function ssPlace(){
-  const box = $('ssBox'), W = innerWidth, H = innerHeight, r = box.getBoundingClientRect();
-  box.style.left = Math.max(0, Math.random()*(W - r.width)) + 'px';
-  box.style.top  = Math.max(0, Math.random()*(H - r.height)) + 'px';
-}
-function ssStart(){
-  if(ssOn) return; ssOn = true;
-  document.body.classList.add('ss-on');
-  ssUpdate(); ssPlace();
-  ssMove = setInterval(()=>{ ssUpdate(); }, 1000);
-  ssMove.p = setInterval(ssPlace, 20000);
-}
-function ssStop(){
-  if(!ssOn) return; ssOn = false;
-  document.body.classList.remove('ss-on');
-  clearInterval(ssMove); clearInterval(ssMove && ssMove.p);
-  fit();
-}
-function ssArm(){
-  clearTimeout(ssIdle);
-  if(isTouch) ssIdle = setTimeout(ssStart, SS_IDLE);
-}
-$('modeBtn').addEventListener('click', e=>{ e.stopPropagation(); ssStart(); });
-$('ss').addEventListener('click', e=>{ e.stopPropagation(); ssStop(); ssArm(); });
-['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev, ()=>{ if(!ssOn) ssArm(); }, {passive:true}));
-ssArm();
+
 setTimeout(()=>document.querySelector('.hint').style.opacity=0, 6000);
 </script>
 </body>
