@@ -311,9 +311,9 @@ const Q = new URLSearchParams(location.search);
 const CONFIG = {
   // 앞에서부터 차례로 시도하고, 성공한 주소를 계속 씀
   sources: Q.get('src') ? [Q.get('src')] : [
-    'https://media26.bechirot.gov.il/files/expc.csv',                                           // 중앙선관위 공식 결과 파일(직접)
-    'api/results.json',                                                                         // 내 레포 API(집 컴퓨터 relay.py가 선관위에서 받아 올림)
-    'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',  // 비공식 중계(예비)
+    'https://media26.bechirot.gov.il/files/expc.csv',                                           // 중앙선관위 공식 결과 파일(직접 — 브라우저가 허용할 때만)
+    'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',  // 선관위 파일 중계본(90초마다, 설정 불필요)
+    'api/results.json',                                                                         // 내 레포 API
     'https://johnnoto.github.io/israel-election-watcher/data/live.json',                        // GitHub Pages 사본
     'https://cdn.jsdelivr.net/gh/johnnoto/israel-election-watcher@main/data/live.json',         // jsDelivr 사본(갱신 느림)
   ],

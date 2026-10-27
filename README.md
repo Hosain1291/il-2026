@@ -16,6 +16,9 @@
 - `?src=주소` 로 다른 데이터 지정 가능 (`worker.js` API의 `/api/results`, 선관위 CSV `/files/expc.csv`)
 
 ## 선관위 공식 결과 연동
+**따로 할 일은 없습니다.** 사이트를 열어 두기만 하면 선관위 결과가 자동으로 들어옵니다.
+
+아래는 선관위 파일을 내 컴퓨터에서 직접 받아 올리고 싶을 때만 쓰는 선택 사항입니다.
 데이터는 **중앙선관위 공식 결과 사이트** [votes26.bechirot.gov.il](https://votes26.bechirot.gov.il/)의 지역별 결과 파일(`media26.bechirot.gov.il/files/expc.csv`)을 씁니다.
 
 선관위는 GitHub 같은 클라우드 서버의 접속을 막기 때문에, **집 컴퓨터가 중계**합니다.
