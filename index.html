@@ -347,6 +347,7 @@ body.portrait .ptab th{font-size:22px}
 body.portrait .ptab td.l{font-size:26px}
 body.portrait .ptab td.l{font-size:20px}
 .status .auto{color:#6f7787;margin-left:8px}
+.ptab .ref{opacity:.45}
 </style>
 </head>
 <body>
@@ -545,7 +546,8 @@ function adaptWatcher(j){
 /* 출구조사 방송사 이름 */
 const BROADCASTERS = { 'חדשות 12':'채널12', 'חדשות 13':'채널13', 'כאן 11':'칸11(공영)', 'i24NEWS':'i24뉴스', 'ערוץ 14':'채널14', 'חדשות 16':'채널16' };
 /* 방송사별 출구조사 평균: 소수 평균(dec)과 120석에 맞춘 정수(int, 최대 잔여 방식) */
-function pollAverage(polls){
+function pollAverage(all){
+  const prim = all.filter(p=>p.primary), polls = prim.length ? prim : all;
   const letters = [...new Set(polls.flatMap(p=>Object.keys(p.seats)))];
   const dec = Object.fromEntries(letters.map(l=>[l, polls.reduce((a,p)=>a+(+p.seats[l]||0),0)/polls.length]));
   const total = Math.round(Object.values(dec).reduce((a,b)=>a+b,0));
@@ -576,7 +578,8 @@ function adaptNavon(j){
     else parties.push({ letter:keyOf((j.parties||[])[i]).trim(), votes:+x||0 });
   });
   const valid = +c[3] || parties.reduce((a,p)=>a+p.votes,0);
-  const polls = (j.polls||[]).filter(p=>p && p.seats).map(p=>({ src: BROADCASTERS[p.src] || p.src, time: String(p.time||'').replace('(מעודכן)','(갱신)'), seats: p.seats }));
+  const feedPolls = (j.polls||[]).filter(p=>p && p.seats).map(p=>({ src: BROADCASTERS[p.src] || p.src, time: String(p.time||'').replace('(מעודכן)','(갱신)'), seats: p.seats }));
+  const polls = [...manualPolls, ...feedPolls.filter(f=>!manualPolls.some(m=>m.src===f.src))];
   const base = { turnout, polls, updated: j.updated ? new Date(j.updated) : new Date() };
   if(!valid && polls.length && Date.now() >= POLLS_CLOSE && !j.rehearsal){       // 개표 전: 출구조사 평균으로 표시
     const avg = pollAverage(polls);
@@ -762,7 +765,7 @@ function render(d){
   if(has){
     const lead = main[0];
     $('strapK').textContent = d.exit ? '출구조사 평균' : `개표율 ${pctf(d.countedPct)}`;
-    $('strapT').textContent = (d.exit ? `방송사 ${d.polls.length}곳 평균 — ` : '') + `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석` + (d.exit ? '' : ' 예상');
+    $('strapT').textContent = (d.exit ? `주요 방송사 ${d.polls.filter(p=>p.primary).length || d.polls.length}곳 출구조사 평균 — ` : '') + `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석` + (d.exit ? '' : ' 예상');
     const items = d.exit
       ? main.filter(p=>p.seats>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> (출구조사)</span>`)
       : main.filter(p=>p.votes>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> ${pctf(p.share)}</span>`);
@@ -791,10 +794,13 @@ function renderPolls(polls){
   const colorOf = l => (PARTIES[resolveId({letter:l})]||{}).color || '#6c7891';
   const blocOf = l => (PARTIES[resolveId({letter:l})]||{}).bloc || 'oth';
   const sumBloc = (seats,b) => letters.filter(l=>blocOf(l)===b).reduce((a,l)=>a+(+seats[l]||0),0);
-  $('ptab').innerHTML = `<tr><th class="l">정당</th>${polls.map(p=>`<th>${p.src}<small>${p.time}</small></th>`).join('')}<th class="avg">평균</th></tr>`
-    + letters.map(l=>`<tr><td class="l"><i style="background:${colorOf(l)}"></i>${nameOf(l)}</td>${polls.map(p=>`<td>${p.seats[l] ?? '–'}</td>`).join('')}<td class="avg">${avg.dec[l].toFixed(1)}</td></tr>`).join('')
-    + [['coal','여당'],['opp','야당'],['mid','아랍·제3지대·무소속']].map(([b,n])=>`<tr class="sum ${b}"><td class="l">${n} 합계</td>${polls.map(p=>`<td>${sumBloc(p.seats,b)}</td>`).join('')}<td class="avg">${sumBloc(avg.dec,b).toFixed(1)}</td></tr>`).join('');
-  $('pnote').textContent = '방송사 출구조사 의석 예측입니다. 선관위 개표 결과가 들어오면 메인 화면은 실제 개표로 바뀝니다.';
+  const cls = p => p.primary ? '' : ' class="ref"';
+  $('ptab').innerHTML = `<tr><th class="l">정당</th>${polls.map(p=>`<th${cls(p)}>${p.src}<small>${p.by||p.time||''}</small></th>`).join('')}<th class="avg">평균</th></tr>`
+    + letters.map(l=>`<tr><td class="l"><i style="background:${colorOf(l)}"></i>${nameOf(l)}</td>${polls.map(p=>`<td${cls(p)}>${p.seats[l] ?? '–'}</td>`).join('')}<td class="avg">${avg.dec[l].toFixed(1)}</td></tr>`).join('')
+    + [['coal','여당'],['opp','야당'],['mid','아랍·제3지대·무소속']].map(([b,n])=>`<tr class="sum ${b}"><td class="l">${n} 합계</td>${polls.map(p=>`<td${cls(p)}>${sumBloc(p.seats,b)}</td>`).join('')}<td class="avg">${sumBloc(avg.dec,b).toFixed(1)}</td></tr>`).join('');
+  const np = polls.filter(p=>p.primary).length;
+  $('pnote').textContent = np ? `평균은 주요 ${np}개 방송사(위키백과 기준) 출구조사입니다. 흐린 열은 참고용. 선관위 개표가 들어오면 메인 화면은 실제 개표로 바뀝니다.`
+                              : '방송사 출구조사 의석 예측입니다. 선관위 개표가 들어오면 메인 화면은 실제 개표로 바뀝니다.';
 }
 
 function emptyData(){
@@ -905,6 +911,13 @@ function clocks(){
 /* ===== 데이터 자동 갱신 (새로고침 없음) ===== */
 let rendered=false;
 let srcIdx = 0;
+let manualPolls = [];                                   // exitpolls.json (위키백과 기준 주요 방송사 출구조사)
+async function loadManualPolls(){
+  try{
+    const r = await fetch('exitpolls.json?t='+Date.now(), {cache:'no-store'});
+    if(r.ok){ const j = await r.json(); manualPolls = (j.polls||[]).filter(p=>p && p.seats); }
+  }catch(e){ /* 파일이 없으면 피드 출구조사만 사용 */ }
+}
 async function fetchData(){
   const errs = [];
   for(let k=0;k<CONFIG.sources.length;k++){
@@ -923,6 +936,7 @@ async function fetchData(){
 }
 async function tick(){
   const banner = $('banner');
+  await loadManualPolls();
   try{
     const text = await fetchData();
     const d = text.trim().startsWith('{') ? (j => j.api==='israel-election-live' ? adaptApi(j) : j.country ? adaptNavon(j) : adaptWatcher(j))(JSON.parse(text)) : adapt(text);
