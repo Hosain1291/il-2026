@@ -881,6 +881,20 @@ async function loop(){ if(busy) return; busy=true; await tick(); busy=false; nex
 setInterval(()=>{ clocks(); if(Date.now()>=nextAt) loop(); }, 1000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loop(); });
 clocks(); loadPlan(); loop(); show(0);
+/* ===== 화면 꺼짐 방지 (Screen Wake Lock) =====
+ * 페이지를 보고 있는 동안 컴퓨터·휴대폰 화면이 자동으로 꺼지지 않게 함.
+ * 다른 탭으로 가면 브라우저가 풀어 버리므로 돌아올 때 다시 요청. 일부 브라우저는 화면을 한 번 눌러야 켜짐. */
+let wakeLock = null;
+async function keepAwake(){
+  if(!('wakeLock' in navigator) || document.hidden || wakeLock) return;
+  try{
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
+  }catch(e){ console.warn('화면 꺼짐 방지를 켜지 못함:', e.message); }
+}
+keepAwake();
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) keepAwake(); });
+['click','touchend','keydown'].forEach(ev=>addEventListener(ev, keepAwake, {passive:true}));
 setTimeout(()=>document.querySelector('.hint').style.opacity=0, 6000);
 </script>
 </body>
