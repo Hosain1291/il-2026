@@ -1,6 +1,815 @@
 {
-  "status": "pre",
-  "updated": "2026-10-27T23:45:11+02:00",
-  "count": 0,
-  "localities": []
+  "status": "counting",
+  "updated": "2026-10-28T00:19:36+02:00",
+  "count": 15,
+  "localities": [
+    {
+      "code": 3759,
+      "ishuv": "3759",
+      "eligible": 342,
+      "voters": 283,
+      "invalid": 3,
+      "valid": 280,
+      "kalfi_counted": null,
+      "turnout_pct": 82.75,
+      "top": [
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 130,
+          "share": 46.43
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 47,
+          "share": 16.79
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 36,
+          "share": 12.86
+        },
+        {
+          "letter": "ני",
+          "name": "노암",
+          "votes": 17,
+          "share": 6.07
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 13,
+          "share": 4.64
+        }
+      ],
+      "votes": {
+        "אמת": 4,
+        "ב": 47,
+        "בי": 1,
+        "די": 2,
+        "דרך": 13,
+        "זך": 1,
+        "ט": 130,
+        "ך": 9,
+        "ל": 7,
+        "מחל": 36,
+        "ני": 17,
+        "רק": 9,
+        "שס": 4
+      }
+    },
+    {
+      "code": 846,
+      "ishuv": "846",
+      "eligible": 341,
+      "voters": 272,
+      "invalid": 0,
+      "valid": 272,
+      "kalfi_counted": null,
+      "turnout_pct": 79.77,
+      "top": [
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 140,
+          "share": 51.47
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 38,
+          "share": 13.97
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 32,
+          "share": 11.76
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 15,
+          "share": 5.51
+        },
+        {
+          "letter": "שס",
+          "name": "샤스",
+          "votes": 13,
+          "share": 4.78
+        }
+      ],
+      "votes": {
+        "אמת": 9,
+        "ב": 15,
+        "די": 3,
+        "דרך": 32,
+        "ט": 38,
+        "ך": 5,
+        "ל": 4,
+        "מחל": 140,
+        "עם": 1,
+        "רק": 12,
+        "שס": 13
+      }
+    },
+    {
+      "code": 10,
+      "ishuv": "10",
+      "eligible": 324,
+      "voters": 250,
+      "invalid": 1,
+      "valid": 249,
+      "kalfi_counted": null,
+      "turnout_pct": 77.16,
+      "top": [
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 127,
+          "share": 51.0
+        },
+        {
+          "letter": "שס",
+          "name": "샤스",
+          "votes": 60,
+          "share": 24.1
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 30,
+          "share": 12.05
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 13,
+          "share": 5.22
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 8,
+          "share": 3.21
+        }
+      ],
+      "votes": {
+        "אמת": 1,
+        "ב": 30,
+        "די": 4,
+        "דרך": 8,
+        "ט": 13,
+        "ך": 3,
+        "מחל": 127,
+        "ני": 1,
+        "רק": 2,
+        "שס": 60
+      }
+    },
+    {
+      "code": 3639,
+      "ishuv": "3639",
+      "eligible": 281,
+      "voters": 212,
+      "invalid": 0,
+      "valid": 212,
+      "kalfi_counted": null,
+      "turnout_pct": 75.44,
+      "top": [
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 79,
+          "share": 37.26
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 34,
+          "share": 16.04
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 31,
+          "share": 14.62
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 19,
+          "share": 8.96
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 14,
+          "share": 6.6
+        }
+      ],
+      "votes": {
+        "אמת": 7,
+        "ב": 31,
+        "בקר": 1,
+        "די": 9,
+        "דרך": 34,
+        "ט": 19,
+        "ך": 9,
+        "ל": 8,
+        "מחל": 79,
+        "רק": 14,
+        "שס": 1
+      }
+    },
+    {
+      "code": 27,
+      "ishuv": "27",
+      "eligible": 258,
+      "voters": 200,
+      "invalid": 0,
+      "valid": 200,
+      "kalfi_counted": null,
+      "turnout_pct": 77.52,
+      "top": [
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 108,
+          "share": 54.0
+        },
+        {
+          "letter": "שס",
+          "name": "샤스",
+          "votes": 34,
+          "share": 17.0
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 29,
+          "share": 14.5
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 16,
+          "share": 8.0
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 6,
+          "share": 3.0
+        }
+      ],
+      "votes": {
+        "ב": 29,
+        "די": 3,
+        "דרך": 16,
+        "ט": 6,
+        "ך": 2,
+        "מחל": 108,
+        "רק": 2,
+        "שס": 34
+      }
+    },
+    {
+      "code": 1211,
+      "ishuv": "1211",
+      "eligible": 256,
+      "voters": 198,
+      "invalid": 0,
+      "valid": 198,
+      "kalfi_counted": null,
+      "turnout_pct": 77.34,
+      "top": [
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 67,
+          "share": 33.84
+        },
+        {
+          "letter": "אמת",
+          "name": "민주당",
+          "votes": 53,
+          "share": 26.77
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 36,
+          "share": 18.18
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 16,
+          "share": 8.08
+        },
+        {
+          "letter": "די",
+          "name": "예비군당",
+          "votes": 9,
+          "share": 4.55
+        }
+      ],
+      "votes": {
+        "אמת": 53,
+        "ב": 7,
+        "ד": 1,
+        "די": 9,
+        "דרך": 67,
+        "ט": 2,
+        "ל": 5,
+        "מחל": 16,
+        "עם": 2,
+        "רק": 36
+      }
+    },
+    {
+      "code": 751,
+      "ishuv": "751",
+      "eligible": 271,
+      "voters": 194,
+      "invalid": 1,
+      "valid": 193,
+      "kalfi_counted": null,
+      "turnout_pct": 71.59,
+      "top": [
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 52,
+          "share": 26.94
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 48,
+          "share": 24.87
+        },
+        {
+          "letter": "ג",
+          "name": "토라유대주의연합",
+          "votes": 24,
+          "share": 12.44
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 23,
+          "share": 11.92
+        },
+        {
+          "letter": "שס",
+          "name": "샤스",
+          "votes": 13,
+          "share": 6.74
+        }
+      ],
+      "votes": {
+        "אמת": 1,
+        "ב": 23,
+        "ג": 24,
+        "די": 5,
+        "דרך": 12,
+        "זך": 1,
+        "ט": 48,
+        "ך": 8,
+        "ל": 1,
+        "מחל": 52,
+        "רק": 5,
+        "שס": 13
+      }
+    },
+    {
+      "code": 3864,
+      "ishuv": "3864",
+      "eligible": 186,
+      "voters": 172,
+      "invalid": 0,
+      "valid": 172,
+      "kalfi_counted": null,
+      "turnout_pct": 92.47,
+      "top": [
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 116,
+          "share": 67.44
+        },
+        {
+          "letter": "ך",
+          "name": "이스라엘 인민당",
+          "votes": 16,
+          "share": 9.3
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 15,
+          "share": 8.72
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 8,
+          "share": 4.65
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 7,
+          "share": 4.07
+        }
+      ],
+      "votes": {
+        "ב": 7,
+        "דרך": 8,
+        "ט": 116,
+        "ך": 16,
+        "ל": 4,
+        "מחל": 5,
+        "ני": 1,
+        "רק": 15
+      }
+    },
+    {
+      "code": 3556,
+      "ishuv": "3556",
+      "eligible": 236,
+      "voters": 169,
+      "invalid": 1,
+      "valid": 168,
+      "kalfi_counted": null,
+      "turnout_pct": 71.61,
+      "top": [
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 46,
+          "share": 27.38
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 34,
+          "share": 20.24
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 28,
+          "share": 16.67
+        },
+        {
+          "letter": "אמת",
+          "name": "민주당",
+          "votes": 25,
+          "share": 14.88
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 12,
+          "share": 7.14
+        }
+      ],
+      "votes": {
+        "אמת": 25,
+        "ב": 7,
+        "די": 7,
+        "דרך": 46,
+        "ט": 12,
+        "ך": 5,
+        "ל": 4,
+        "מחל": 28,
+        "רק": 34
+      }
+    },
+    {
+      "code": 1134,
+      "ishuv": "1134",
+      "eligible": 196,
+      "voters": 151,
+      "invalid": 1,
+      "valid": 150,
+      "kalfi_counted": null,
+      "turnout_pct": 77.04,
+      "top": [
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 53,
+          "share": 35.33
+        },
+        {
+          "letter": "די",
+          "name": "예비군당",
+          "votes": 29,
+          "share": 19.33
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 19,
+          "share": 12.67
+        },
+        {
+          "letter": "ל",
+          "name": "이스라엘 베이테누",
+          "votes": 16,
+          "share": 10.67
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 13,
+          "share": 8.67
+        }
+      ],
+      "votes": {
+        "אמת": 4,
+        "ב": 1,
+        "די": 29,
+        "דרך": 53,
+        "ט": 5,
+        "ך": 10,
+        "ל": 16,
+        "מחל": 19,
+        "רק": 13
+      }
+    },
+    {
+      "code": 347,
+      "ishuv": "347",
+      "eligible": 221,
+      "voters": 134,
+      "invalid": 1,
+      "valid": 133,
+      "kalfi_counted": null,
+      "turnout_pct": 60.63,
+      "top": [
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 54,
+          "share": 40.6
+        },
+        {
+          "letter": "אמת",
+          "name": "민주당",
+          "votes": 26,
+          "share": 19.55
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 18,
+          "share": 13.53
+        },
+        {
+          "letter": "ל",
+          "name": "이스라엘 베이테누",
+          "votes": 14,
+          "share": 10.53
+        },
+        {
+          "letter": "ך",
+          "name": "이스라엘 인민당",
+          "votes": 5,
+          "share": 3.76
+        }
+      ],
+      "votes": {
+        "אמת": 26,
+        "ב": 3,
+        "די": 4,
+        "דרך": 54,
+        "ט": 4,
+        "ך": 5,
+        "ל": 14,
+        "מחל": 5,
+        "רק": 18
+      }
+    },
+    {
+      "code": 1043,
+      "ishuv": "1043",
+      "eligible": 152,
+      "voters": 127,
+      "invalid": 0,
+      "valid": 127,
+      "kalfi_counted": null,
+      "turnout_pct": 83.55,
+      "top": [
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 39,
+          "share": 30.71
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 30,
+          "share": 23.62
+        },
+        {
+          "letter": "אמת",
+          "name": "민주당",
+          "votes": 23,
+          "share": 18.11
+        },
+        {
+          "letter": "רק",
+          "name": "비야하드",
+          "votes": 9,
+          "share": 7.09
+        },
+        {
+          "letter": "די",
+          "name": "예비군당",
+          "votes": 8,
+          "share": 6.3
+        }
+      ],
+      "votes": {
+        "אמת": 23,
+        "ב": 4,
+        "די": 8,
+        "דרך": 30,
+        "ט": 4,
+        "ך": 1,
+        "ל": 8,
+        "מחל": 39,
+        "רק": 9,
+        "שס": 1
+      }
+    },
+    {
+      "code": 1212,
+      "ishuv": "1212",
+      "eligible": 154,
+      "voters": 124,
+      "invalid": 1,
+      "valid": 123,
+      "kalfi_counted": null,
+      "turnout_pct": 80.52,
+      "top": [
+        {
+          "letter": "אמת",
+          "name": "민주당",
+          "votes": 50,
+          "share": 40.65
+        },
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 48,
+          "share": 39.02
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 10,
+          "share": 8.13
+        },
+        {
+          "letter": "ל",
+          "name": "이스라엘 베이테누",
+          "votes": 6,
+          "share": 4.88
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 3,
+          "share": 2.44
+        }
+      ],
+      "votes": {
+        "אמת": 50,
+        "ב": 1,
+        "די": 1,
+        "דרך": 48,
+        "ודם": 1,
+        "ט": 3,
+        "ל": 6,
+        "מחל": 10,
+        "רק": 3
+      }
+    },
+    {
+      "code": 3607,
+      "ishuv": "3607",
+      "eligible": 163,
+      "voters": 103,
+      "invalid": 0,
+      "valid": 103,
+      "kalfi_counted": null,
+      "turnout_pct": 63.19,
+      "top": [
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 42,
+          "share": 40.78
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 36,
+          "share": 34.95
+        },
+        {
+          "letter": "ל",
+          "name": "이스라엘 베이테누",
+          "votes": 8,
+          "share": 7.77
+        },
+        {
+          "letter": "די",
+          "name": "예비군당",
+          "votes": 6,
+          "share": 5.83
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 4,
+          "share": 3.88
+        }
+      ],
+      "votes": {
+        "ב": 4,
+        "ג": 1,
+        "די": 6,
+        "דרך": 2,
+        "ט": 42,
+        "י": 2,
+        "ך": 1,
+        "ל": 8,
+        "מחל": 36,
+        "רק": 1
+      }
+    },
+    {
+      "code": 1338,
+      "ishuv": "1338",
+      "eligible": 145,
+      "voters": 81,
+      "invalid": 0,
+      "valid": 81,
+      "kalfi_counted": null,
+      "turnout_pct": 55.86,
+      "top": [
+        {
+          "letter": "דרך",
+          "name": "야샤르당",
+          "votes": 19,
+          "share": 23.46
+        },
+        {
+          "letter": "מחל",
+          "name": "리쿠드당",
+          "votes": 19,
+          "share": 23.46
+        },
+        {
+          "letter": "ב",
+          "name": "유대의 힘",
+          "votes": 14,
+          "share": 17.28
+        },
+        {
+          "letter": "אמת",
+          "name": "민주당",
+          "votes": 12,
+          "share": 14.81
+        },
+        {
+          "letter": "ט",
+          "name": "종교시오니즘당",
+          "votes": 6,
+          "share": 7.41
+        }
+      ],
+      "votes": {
+        "אמת": 12,
+        "ב": 14,
+        "ג": 2,
+        "די": 3,
+        "דרך": 19,
+        "ט": 6,
+        "ך": 4,
+        "מחל": 19,
+        "שס": 2
+      }
+    }
+  ]
 }

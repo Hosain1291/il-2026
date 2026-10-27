@@ -543,6 +543,9 @@ function adaptWatcher(j){
            eligible:n.r, voted:n.t, valid: n.v.reduce((a,b)=>a+b,0), parties, cecTime: j.cec_time };
 }
 
+/* 개표율이 이 값(%) 미만이면 의석은 출구조사 평균으로 보여 줌 — 극초반 개표는 지역이 치우쳐 의석 계산이 크게 틀림 */
+const EXIT_UNTIL = 10;
+
 /* 출구조사 방송사 이름 */
 const BROADCASTERS = { 'חדשות 12':'채널12', 'חדשות 13':'채널13', 'כאן 11':'칸11(공영)', 'i24NEWS':'i24뉴스', 'ערוץ 14':'채널14', 'חדשות 16':'채널16' };
 /* 방송사별 출구조사 평균: 소수 평균(dec)과 120석에 맞춘 정수(int, 최대 잔여 방식) */
@@ -591,7 +594,16 @@ function adaptNavon(j){
   if(j.rehearsal) return { pre:true, test:true, ...base };
   if(Date.now() < POLLS_CLOSE) return { pre:true, test:true, ...base };
   for(const m of Object.values(PARTIES)) if(!parties.some(p=>m.letters.includes(p.letter))) parties.push({letter:m.letters[0], votes:0});
-  return { ...base, countedPct: Math.min(100, (+c[0]||0)/CONFIG.totalEligible*100), eligible:+c[0]||0, voted:+c[1]||0, valid, parties };
+  // country[0]은 전체 유권자 수(고정)라서 개표율 계산에 못 씀 → 개표된 지역(towns)·이중봉투(external)의 유권자 수를 더함
+  let counted = 0;
+  for(const row of Object.values(j.towns||{})) if(Array.isArray(row) && +row[1] > 0) counted += +row[0]||0;
+  if(Array.isArray(j.external) && +j.external[1] > 0) counted += +j.external[0]||0;
+  const countedPct = Math.min(100, counted/CONFIG.totalEligible*100);
+  if(countedPct < EXIT_UNTIL && polls.length){            // 개표 극초반: 의석은 출구조사 평균, 득표는 실제 개표
+    const avg = pollAverage(polls);
+    return { ...base, exit:true, fixedSeats: avg.int, avgSeats: avg.dec, countedPct, eligible:counted, voted:+c[1]||0, valid, parties };
+  }
+  return { ...base, countedPct, eligible:counted, voted:+c[1]||0, valid, parties };
 }
 
 /* 내 워커 API(/api/results) 형식 변환 */
@@ -707,7 +719,7 @@ function render(d){
   const has = d.valid > 0 || !!d.fixedSeats;
   const main = list.filter(p=>PARTIES[p.letter] || p.seats);
 
-  rollTo('kCounted', +(d.countedPct||0).toFixed(1), 1, '%');
+  { const cp = d.countedPct||0, dg = cp>0 && cp<1 ? 2 : 1; rollTo('kCounted', +cp.toFixed(dg), dg, '%'); }
   $('kBar').style.width = (d.countedPct||0)+'%';
   $('kTurnout').textContent = has && d.eligible ? pctf(d.voted/d.eligible*100) : '–';
 
@@ -764,8 +776,8 @@ function render(d){
   // 하단 띠 & 자막
   if(has){
     const lead = main[0];
-    $('strapK').textContent = d.exit ? '출구조사 평균' : `개표율 ${pctf(d.countedPct)}`;
-    $('strapT').textContent = (d.exit ? `주요 방송사 ${d.polls.filter(p=>p.primary).length || d.polls.length}곳 출구조사 평균 — ` : '') + `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석` + (d.exit ? '' : ' 예상');
+    $('strapK').textContent = d.exit ? (d.countedPct > 0 ? `개표율 ${d.countedPct.toFixed(2)}%` : '출구조사 평균') : `개표율 ${pctf(d.countedPct)}`;
+    $('strapT').textContent = (d.exit ? (d.countedPct > 0 ? `개표 초반이라 의석은 출구조사 평균 — ` : `주요 방송사 ${d.polls.filter(p=>p.primary).length || d.polls.length}곳 출구조사 평균 — `) : '') + `여당 ${bs.coal}석 · 야당 ${bs.opp}석 · 아랍·제3지대·무소속 ${bs.mid+bs.oth}석 — 제1당 ${lead.m.name} ${lead.seats}석` + (d.exit ? '' : ' 예상');
     const items = d.exit
       ? main.filter(p=>p.seats>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> (출구조사)</span>`)
       : main.filter(p=>p.votes>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> ${pctf(p.share)}</span>`);
@@ -777,7 +789,7 @@ function render(d){
   if(d.polls) renderPolls(d.polls);
   if(d.turnout) showTurnout(d.turnout);
   const feedT = d.updated ? d.updated.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
-  $('statusText').textContent = d.exit ? `출구조사 평균 · 선관위 개표 대기 · 데이터 ${feedT} 기준` : has
+  $('statusText').textContent = d.exit ? (d.countedPct > 0 ? `의석은 출구조사 평균 · 데이터 ${feedT} 기준` : `개표 대기 · 데이터 ${feedT} 기준`) : has
     ? (d.countedPct>=100?'개표 완료 · ':'') + d.updated.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' 기준'
     : '개표 시작 전';
 }

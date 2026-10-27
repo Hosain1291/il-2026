@@ -133,10 +133,15 @@ def from_navon(j):
         if sum(tv.values()):
             locs.append([int(code), str(code), num(row[0]), num(row[1]), num(row[2]), None, [tv.get(k, 0) for k in codes]])
     counting = sum(nv.values()) > 0
+    # country[0] 은 전체 유권자(고정) → 개표된 지역·이중봉투의 유권자만 더해 개표 기준 유권자로 씀
+    counted_r = sum(num(r[0]) for r in (j.get('towns') or {}).values() if isinstance(r, list) and num(r[1]) > 0)
+    ext = j.get('external') or []
+    if isinstance(ext, list) and len(ext) > 1 and num(ext[1]) > 0:
+        counted_r += num(ext[0])
     test = bool(j.get('rehearsal')) or datetime.now(timezone.utc) < POLLS_CLOSE
     return {'status': 'counting' if counting else 'pre', 'test_env': test, 'cec_time': j.get('updated_label'),
             'fetched_at': j.get('updated'), 'codes': codes,
-            'national': {'r': num(c[0]), 't': num(c[1]), 'x': num(c[2]), 'v': [nv[k] for k in codes]}, 'locs': locs,
+            'national': {'r': counted_r, 't': num(c[1]), 'x': num(c[2]), 'v': [nv[k] for k in codes]}, 'locs': locs,
             'turnout': j.get('turnout')}
 
 
