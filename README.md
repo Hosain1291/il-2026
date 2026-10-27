@@ -10,9 +10,27 @@
 - 30초마다 새로고침 없이 자동 갱신
 
 ## 데이터
-- 기본: [johnnoto/israel-election-watcher](https://github.com/johnnoto/israel-election-watcher)의 `live.json` (선관위 결과 파일을 90초마다 중계하는 비공식 데이터)
+- 기본: 중앙선관위 공식 결과(아래 '선관위 공식 결과 연동')
+- 예비: [johnnoto/israel-election-watcher](https://github.com/johnnoto/israel-election-watcher)의 `live.json` (선관위 파일을 90초마다 중계하는 비공식 데이터)
 - 투표 종료(한국시간 28일 05:00) 전에는 "개표 시작 전"으로 표시
 - `?src=주소` 로 다른 데이터 지정 가능 (`worker.js` API의 `/api/results`, 선관위 CSV `/files/expc.csv`)
+
+## 선관위 공식 결과 연동
+데이터는 **중앙선관위 공식 결과 사이트** [votes26.bechirot.gov.il](https://votes26.bechirot.gov.il/)의 지역별 결과 파일(`media26.bechirot.gov.il/files/expc.csv`)을 씁니다.
+
+선관위는 GitHub 같은 클라우드 서버의 접속을 막기 때문에, **집 컴퓨터가 중계**합니다.
+
+1. 레포를 내려받습니다 (Code → Download ZIP 후 압축 풀기).
+2. 깃허브 토큰 만들기: https://github.com/settings/personal-access-tokens/new
+   - Repository access: **Only select repositories → il-2026**
+   - Permissions → **Contents: Read and write**
+3. **윈도우:** `중계시작.bat` 더블클릭 · **맥/리눅스:** `python3 scripts/relay.py`
+4. 처음 한 번 토큰을 붙여 넣으면 이후 자동. 1분마다 선관위 결과를 받아 `api/*.json`을 레포에 올립니다.
+   - 창을 켜 두고 컴퓨터가 잠들지 않게 해 주세요. 투표 종료(한국시간 28일 05:00) 전에 켜 두면 됩니다.
+
+개표 페이지는 ① 선관위 파일 직접 → ② 내 레포 `api/results.json`(중계) → ③ 비공식 중계 순서로 읽습니다.
+집 컴퓨터를 못 켜는 동안에는 GitHub Actions가 ③으로 `api/`를 대신 채웁니다.
+투표 종료 전에 올라온 숫자는 선관위 시험 데이터로 보고 표시하지 않습니다.
 
 ## API (레포 안에서 자동 갱신)
 GitHub Actions가 15분마다 시작해서, 투표 종료 후에는 1분 간격으로 개표 데이터를 받아 `api/` 폴더를 갱신합니다. Cloudflare 같은 별도 서버는 필요 없습니다.

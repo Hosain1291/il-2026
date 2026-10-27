@@ -1,6 +1,8 @@
 name: 개표 API 갱신
 
 # 개표 데이터를 받아 api/*.json 을 갱신하고 커밋 → GitHub Pages가 그대로 API로 제공
+# 선관위는 GitHub 서버 접속을 막으므로 보통은 비공식 중계(watcher)로 대신 채움.
+# 집 컴퓨터의 relay.py 가 선관위에서 직접 올리고 있으면(10분 이내) 덮어쓰지 않고 넘어감.
 #   https://hosain1291.github.io/il-2026/api/results.json
 # 15분마다 시작해서, 투표 종료 후에는 한 번 실행될 때 50분 동안 1분 간격으로 계속 갱신
 on:

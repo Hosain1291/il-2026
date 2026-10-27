@@ -1,6 +1,8 @@
 {
-  "checked_at": "2026-10-27T03:49:05Z",
+  "checked_at": "2026-10-27T06:49:22Z",
   "source": "https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json",
   "status": "pre",
-  "data_updated": null
+  "data_updated": null,
+  "cec_time": null,
+  "via": "actions"
 }

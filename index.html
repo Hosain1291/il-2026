@@ -311,8 +311,9 @@ const Q = new URLSearchParams(location.search);
 const CONFIG = {
   // 앞에서부터 차례로 시도하고, 성공한 주소를 계속 씀
   sources: Q.get('src') ? [Q.get('src')] : [
-    'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',  // GitHub 원본
-    'api/results.json',                                                                         // 내 레포 API(GitHub Actions가 갱신)
+    'https://media26.bechirot.gov.il/files/expc.csv',                                           // 중앙선관위 공식 결과 파일(직접)
+    'api/results.json',                                                                         // 내 레포 API(집 컴퓨터 relay.py가 선관위에서 받아 올림)
+    'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',  // 비공식 중계(예비)
     'https://johnnoto.github.io/israel-election-watcher/data/live.json',                        // GitHub Pages 사본
     'https://cdn.jsdelivr.net/gh/johnnoto/israel-election-watcher@main/data/live.json',         // jsDelivr 사본(갱신 느림)
   ],
@@ -384,27 +385,31 @@ function parseCSV(text){
   if(cell||row.length){ row.push(cell); rows.push(row); }
   return rows.filter(r=>r.some(x=>x.trim()));
 }
+const POLLS_CLOSE = Date.UTC(2026,9,27,20,0);   // 투표 종료 = 한국시간 28일 05:00
+const META_COLS = new Set(['סמל ועדה','ברזל','שם ישוב','סמל ישוב','קלפי','ריכוז','שופט','בזב','מצביעים','פסולים','כשרים','חיצוניות','קלפי אחרת','']);
+/* 중앙선관위 expc.csv (지역별 결과) → 화면용 데이터 */
 function adapt(text){
-  const rows = parseCSV(text.replace(/^\uFEFF/,''));
+  const rows = parseCSV(text.replace(/^﻿/,''));
   const head = rows[0].map(h=>h.trim());
-  const col = name => head.findIndex(h=>h.includes(name));
-  const iE=col('בזב'), iV=col('מצביעים'), iValid=col('כשרים'), iCity=col('שם ישוב');
-  if(iE<0 || iValid<0) throw new Error('CSV 형식이 예상과 다릅니다');
-  const first = Math.max(iE,iV,col('פסולים'),iValid)+1;
-  const num = v => +String(v).replace(/[^\d.-]/g,'') || 0;
-  const sums = new Array(head.length).fill(0);
-  let eligible=0, voted=0, valid=0;
+  const ix = name => head.indexOf(name);
+  const iCode=ix('סמל ישוב'), iE=ix('בזב'), iV=ix('מצביעים'), iValid=ix('כשרים');
+  if(iCode<0 || iE<0) throw new Error('선관위 CSV 형식이 예상과 다릅니다');
+  const pcols = head.map((h,i)=>[h,i]).filter(([h])=>!META_COLS.has(h));
+  const num = v => +String(v??'').replace(/[^\d.-]/g,'') || 0;
+  const sums = pcols.map(()=>0);
+  let eligible=0, voted=0, valid=0, counted=0;
   for(const r of rows.slice(1)){
-    if(iCity>=0 && /סה"?כ|סך הכל/.test(r[iCity]||'')) continue;  // 합계 행 제외
-    eligible+=num(r[iE]); voted+=num(r[iV]); valid+=num(r[iValid]);
-    for(let j=first;j<head.length;j++) sums[j]+=num(r[j]);
+    if(!/^\d+$/.test((r[iCode]||'').trim())) continue;          // 합계 행 등 제외
+    const v = pcols.map(([,i])=>num(r[i]));
+    if(!num(r[iV]) && !v.some(Boolean)) continue;               // 아직 개표 안 된 지역
+    counted++; eligible+=num(r[iE]); voted+=num(r[iV]); valid+= iValid>=0 ? num(r[iValid]) : v.reduce((a,b)=>a+b,0);
+    v.forEach((n,k)=>sums[k]+=n);
   }
-  const parties=[];
-  for(let j=first;j<head.length;j++) if(head[j]) parties.push({ letter:head[j], votes:sums[j] });
-  // 개표 안 된 정당 목록도 카드로 보이도록 0표로 채움
+  if(!counted) return { pre:true };
+  if(Date.now() < POLLS_CLOSE) return { pre:true, test:true };  // 투표 종료 전 숫자는 시험 데이터
+  const parties = pcols.map(([h],k)=>({ letter:h, votes:sums[k] }));
   for(const m of Object.values(PARTIES)) if(!parties.some(p=>m.letters.includes(p.letter))) parties.push({letter:m.letters[0], votes:0});
-  return { updated:new Date(), countedPct: Math.min(100, eligible/CONFIG.totalEligible*100),
-           eligible, voted, valid, parties };
+  return { updated:new Date(), countedPct: Math.min(100, eligible/CONFIG.totalEligible*100), eligible, voted, valid, parties };
 }
 
 /* ================= 비공식 중계 JSON 변환 ================= */
@@ -422,7 +427,7 @@ function adaptWatcher(j){
 function adaptApi(j){
   if(j.status!=='counting') return { pre:true, test: j.status==='test' };
   const parties = j.parties.map(p=>({ letter: p.letter==='OTHER' ? '_' : p.letter, name: p.letter==='OTHER' ? '군소정당 합계' : undefined, votes:p.votes }));
-  return { updated: new Date(j.updated||Date.now()), countedPct: j.counted_pct, eligible: j.eligible_counted, voted: j.voters, valid: j.valid, parties };
+  return { updated: new Date(j.updated||Date.now()), countedPct: j.counted_pct, cecTime: j.cec_time, eligible: j.eligible_counted, voted: j.voters, valid: j.valid, parties };
 }
 
 /* ================= 의석 계산 (Bader-Ofer) ================= */

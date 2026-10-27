@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
-"""개표 데이터를 받아 api/*.json 파일로 만든다 (GitHub Actions에서 실행).
+"""개표 데이터를 받아 api/*.json 파일로 만든다.
 
-출처: johnnoto/israel-election-watcher 의 live.json
-      (선관위가 GitHub 등 클라우드 서버를 막아서, 개인 맥에서 받아 중계하는 비공식 데이터)
+출처 (앞에서부터 차례로 시도)
+  1) 중앙선관위 공식 결과 — https://votes26.bechirot.gov.il/
+     결과 파일: https://media26.bechirot.gov.il/files/expc.csv (지역별)
+     ※ 선관위는 GitHub 같은 클라우드 서버 접속을 막으므로, 집 컴퓨터에서 relay.py 로 돌릴 때 쓰임
+  2) johnnoto/israel-election-watcher 의 live.json (선관위 파일을 90초마다 중계하는 비공식 데이터)
+
 결과: api/results.json · api/localities.json · api/parties.json · api/status.json
+사용: python scripts/build_api.py            # 1 → 2 순서
+      python scripts/build_api.py --cec      # 선관위만 (relay.py 가 사용)
 변경이 있으면 CHANGED, 없으면 UNCHANGED 를 출력.
 """
-import json, math, os, sys, urllib.request
-from datetime import datetime, timezone
+import csv, io, json, math, os, re, sys, time, urllib.request
+from datetime import datetime, timezone, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'api')
-SOURCES = [
+CEC_SITE = 'https://votes26.bechirot.gov.il/'
+CEC_EXPC = 'https://media26.bechirot.gov.il/files/expc.csv'
+WATCHER = [
     'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',
     'https://johnnoto.github.io/israel-election-watcher/data/live.json',
 ]
+POLLS_CLOSE = datetime(2026, 10, 27, 20, 0, tzinfo=timezone.utc)   # 투표 종료 = 한국시간 28일 05:00
+UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36',
+      'Accept-Language': 'he,ko;q=0.8,en;q=0.6'}
+META_COLS = {'סמל ועדה', 'ברזל', 'שם ישוב', 'סמל ישוב', 'קלפי', 'ריכוז', 'שופט', 'בזב', 'מצביעים', 'פסולים', 'כשרים',
+             'חיצוניות', 'קלפי אחרת', ''}
 SEATS, THRESHOLD, ELIGIBLE_TOTAL = 120, 0.0325, 7331981
 
 PARTIES = {
@@ -37,16 +50,86 @@ GROUP = {'joint': 'arab', 'reservists': 'third', 'noam': 'unaligned'}  # mid 진
 AGREEMENTS = [('מחל', 'ט'), ('שס', 'ג'), ('דרך', 'אמת'), ('רק', 'ל'), ('ודם', 'עם')]
 
 
-def fetch():
-    last = None
-    for url in SOURCES:
+def get(url, timeout=40):
+    req = urllib.request.Request(url + ('&' if '?' in url else '?') + f'_={int(time.time())}', headers=UA)
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def num(x):
+    try:
+        return int(float(str(x).replace(',', '').strip() or 0))
+    except ValueError:
+        return 0
+
+
+def fetch_cec():
+    """선관위 공식 사이트에서 직접 받아 live.json 과 같은 형태로 바꿈."""
+    test_env, cec_time = False, None
+    try:
+        html = get(CEC_SITE).decode('utf-8', 'replace')
+        test_env = 'סביבת בדיקות' in html
+        m = re.search(r'תוצאות נכון ל-?\s*([0-9/.]+\s+[0-9:]+)', html)
+        cec_time = m.group(1) if m else None
+    except Exception as e:
+        print('경고: 선관위 결과 페이지 접속 실패:', e, file=sys.stderr)
+    raw = get(CEC_EXPC)
+    try:
+        text = raw.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        text = raw.decode('cp1255')
+    rows = list(csv.reader(io.StringIO(text)))
+    head = [h.strip() for h in rows[0]]
+    if 'סמל ישוב' not in head:
+        raise RuntimeError('선관위 CSV 형식이 예상과 다름')
+    codes = [h for h in head if h not in META_COLS]
+    ix = {h: i for i, h in enumerate(head)}
+    nat = {'r': 0, 't': 0, 'x': 0, 'v': [0] * len(codes)}
+    locs = []
+    for r in rows[1:]:
+        d = dict(zip(head, r))
         try:
-            req = urllib.request.Request(url + f'?t={int(datetime.now().timestamp())}', headers={'User-Agent': 'il-2026-api'})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                return json.load(r), url
+            code = int(str(d.get('סמל ישוב', '')).strip())
+        except ValueError:
+            continue                                   # 합계 행 등
+        v = [num(r[ix[c]]) if ix[c] < len(r) else 0 for c in codes]
+        lr, lt, lx = num(d.get('בזב')), num(d.get('מצביעים')), num(d.get('פסולים'))
+        if lt == 0 and sum(v) == 0:
+            continue                                   # 아직 개표 안 됨
+        locs.append([code, d.get('שם ישוב', '').strip(), lr, lt, lx, None, v])
+        nat['r'] += lr; nat['t'] += lt; nat['x'] += lx
+        nat['v'] = [a + b for a, b in zip(nat['v'], v)]
+    if datetime.now(timezone.utc) < POLLS_CLOSE:
+        test_env = True                                # 투표 종료 전에 올라온 숫자는 시험 데이터
+    return {'status': 'counting' if locs else 'pre', 'test_env': test_env, 'cec_time': cec_time,
+            'fetched_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'codes': codes, 'national': nat, 'locs': locs}
+
+
+def fetch(cec_only=False):
+    errs = []
+    try:
+        return fetch_cec(), 'cec:' + CEC_EXPC
+    except Exception as e:
+        errs.append(f'선관위: {e}')
+        if cec_only:
+            raise SystemExit('선관위 데이터를 받지 못함: ' + str(e))
+    for url in WATCHER:
+        try:
+            return json.loads(get(url, 30)), url
         except Exception as e:
-            last = e
-    raise SystemExit(f'데이터를 받지 못함: {last}')
+            errs.append(f'{url}: {e}')
+    raise SystemExit('데이터를 받지 못함: ' + ' / '.join(errs))
+
+
+def relay_is_fresh():
+    """집 컴퓨터의 relay.py 가 최근 10분 안에 선관위 데이터를 올렸으면 GitHub Actions 는 덮어쓰지 않음."""
+    try:
+        st = json.load(open(os.path.join(OUT, 'status.json'), encoding='utf-8'))
+        t = datetime.strptime(st['checked_at'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        return st.get('source', '').startswith('cec:') and st.get('via') == 'relay' and datetime.now(timezone.utc) - t < timedelta(minutes=10)
+    except Exception:
+        return False
 
 
 def dhondt(votes, n):
@@ -84,7 +167,11 @@ def name(l):
 
 
 def main():
-    j, src = fetch()
+    cec_only = '--cec' in sys.argv
+    via = 'relay' if cec_only else 'actions'
+    if not cec_only and relay_is_fresh():
+        print('UNCHANGED 집 컴퓨터 중계(relay.py)가 최신 데이터를 올리는 중'); return
+    j, src = fetch(cec_only)
     status = 'pre' if j.get('status') != 'counting' else ('test' if j.get('test_env') else 'counting')
     codes = j.get('codes') or []
     nat = j.get('national') or {}
@@ -154,10 +241,11 @@ def main():
         if old != text:
             open(path, 'w', encoding='utf-8').write(text); changed = True
     status_doc = {'checked_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': src,
-                  'status': status, 'data_updated': j.get('fetched_at')}
-    if changed or not os.path.exists(os.path.join(OUT, 'status.json')):
+                  'status': status, 'data_updated': j.get('fetched_at'), 'cec_time': j.get('cec_time'), 'via': via}
+    if changed or via == 'relay' or not os.path.exists(os.path.join(OUT, 'status.json')):
         json.dump(status_doc, open(os.path.join(OUT, 'status.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
     print(('CHANGED' if changed else 'UNCHANGED') + f' status={status} valid={valid} localities={len(locs)}')
+    return changed
 
 
 if __name__ == '__main__':
