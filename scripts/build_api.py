@@ -25,16 +25,16 @@ PARTIES = {
     'ג':   ('utj', '토라유대주의연합', 'United Torah Judaism', '골드크노프', 'gov'),
     'רק':  ('together', '비야하드', 'Together', '베네트', 'opp'),
     'דרך': ('yashar', '야샤르당', 'Yashar', '아이젠코트', 'opp'),
-    'כן':  ('bluewhite', '청백당', 'Blue and White', '간츠', 'mid'),
+    'כן':  ('bluewhite', '청백당', 'Blue and White', '간츠', 'opp'),
     'אמת': ('democrats', '민주당', 'The Democrats', '골란', 'opp'),
     'ל':   ('yb', '이스라엘 베이테누', 'Yisrael Beiteinu', '리베르만', 'opp'),
     'די':  ('reservists', '예비군당', 'The Reservists', '헨델', 'mid'),
     'ך':   ('amcha', '이스라엘 인민당', 'Amcha Yisrael', '윈터', 'opp'),
     'ודם': ('joint', '공동명부', 'Joint List', '자바린', 'mid'),
-    'עם':  ('raam', '라암', "Ra'am", '압바스', 'mid'),
+    'עם':  ('raam', '라암', "Ra'am", '압바스', 'opp'),
     'ני':  ('noam', '노암', 'Noam', '마오즈', 'mid'),
 }
-GROUP = {'joint': 'arab', 'raam': 'arab', 'bluewhite': 'third', 'reservists': 'third', 'noam': 'unaligned'}  # mid 진영 세부: 아랍 / 제3지대 / 무소속
+GROUP = {'joint': 'arab', 'reservists': 'third', 'noam': 'unaligned'}  # mid 진영 세부: 아랍 / 제3지대 / 무소속
 AGREEMENTS = [('מחל', 'ט'), ('שס', 'ג'), ('דרך', 'אמת'), ('רק', 'ל'), ('ודם', 'עם')]
 
 

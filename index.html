@@ -254,7 +254,7 @@ body.portrait .scene .stitle{align-self:flex-start}
     <div class="vs">
       <div class="side coal"><div class="lab">여당</div><div class="big num" id="sCoal">0</div><div class="who">리쿠드당 · 유대의 힘 · 종교시오니즘당 · 샤스 · 토라유대주의연합</div></div>
       <div class="mid"><div class="m1">과반</div><div class="m2 num">61</div><div class="m3">전체 120석</div><div class="m4"><span>아랍·제3지대·무소속</span><b class="num" id="sMid">0</b></div></div>
-      <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">야샤르당 · 비야하드 · 민주당 · 이스라엘 베이테누 · 이스라엘 인민당</div></div>
+      <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">야샤르당 · 비야하드 · 청백당 · 민주당 · 이스라엘 베이테누 · 라암 외</div></div>
     </div>
     <div class="blocs" id="blocs"></div>
   </section>
@@ -325,7 +325,7 @@ const CONFIG = {
 /* 정당 메타데이터 — 투표용지 기호는 중앙선관위 공시(ynet·Israel Gazette 보도) 기준
  * 블록은 위키백과 여론조사 문서의 Gov. 집계(37대 정부 구성 정당)를 따름
  * bloc: 'coal'(여당) | 'opp'(야당) | 'mid'(아랍·제3지대·무소속) | 'oth'(목록 밖 군소정당)
- *   제3지대: 위키백과 "third bloc" = 청백당, 예비군당(헨델) / 무소속: 25대 크네세트 Unaligned = 노암 */
+ *   청백당·라암은 야당 / 제3지대: 예비군당(헨델) / 아랍: 공동명부 / 무소속: 노암 */
 const PARTIES = {
   likud:      { name:'리쿠드당', leader:'네타냐후', color:'#2a6be0', bloc:'coal', letters:['מחל'] },
   otzma:      { name:'유대의 힘', leader:'벤그비르', color:'#e8a33a', bloc:'coal', letters:['ב'] },
@@ -334,13 +334,13 @@ const PARTIES = {
   utj:        { name:'토라유대주의연합', leader:'골드크노프', color:'#9aa4b2', bloc:'coal', letters:['ג'] },
   together:   { name:'비야하드', leader:'베네트', color:'#2fb5c9', bloc:'opp', letters:['רק'] },
   yashar:     { name:'야샤르당', leader:'아이젠코트', color:'#3a7d5c', bloc:'opp', letters:['דרך'] },
-  bluewhite:  { name:'청백당', leader:'간츠', color:'#3d6fd1', bloc:'mid', tag:'제3지대', letters:['כן'] },
+  bluewhite:  { name:'청백당', leader:'간츠', color:'#3d6fd1', bloc:'opp', letters:['כן'] },
   democrats:  { name:'민주당', leader:'골란', color:'#d6453d', bloc:'opp', letters:['אמת'] },
   yb:         { name:'이스라엘 베이테누', leader:'리베르만', color:'#5a9e2f', bloc:'opp', letters:['ל'] },
   reservists: { name:'예비군당', leader:'헨델', color:'#b8925a', bloc:'mid', tag:'제3지대', letters:['די'] },
   amcha:      { name:'이스라엘 인민당', leader:'윈터', color:'#93a83c', bloc:'opp', letters:['ך'] },
   joint:      { name:'공동명부', leader:'자바린', color:'#b23a48', bloc:'mid', tag:'아랍', letters:['ודם'] },
-  raam:       { name:'라암', leader:'압바스', color:'#2e7d32', bloc:'mid', tag:'아랍', letters:['עם'] },
+  raam:       { name:'라암', leader:'압바스', color:'#2e7d32', bloc:'opp', letters:['עם'] },
   noam:       { name:'노암', leader:'마오즈', color:'#c47a4f', bloc:'mid', tag:'무소속', letters:['ני'] },
 };
 /* 의석 가능성이 낮은 나머지 23개 군소정당 — 기호 → 표시 이름 */

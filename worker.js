@@ -40,13 +40,13 @@ const PARTIES = {
   'ג':   { id: 'utj',        ko: '토라유대주의연합',        en: 'United Torah Judaism',    leader: '골드크노프', bloc: 'gov' },
   'רק':  { id: 'together',   ko: '비야하드',             en: 'Together',                leader: '베네트',     bloc: 'opp' },
   'דרך': { id: 'yashar',     ko: '야샤르당',               en: 'Yashar',                  leader: '아이젠코트', bloc: 'opp' },
-  'כן':  { id: 'bluewhite',  ko: '청백당',               en: 'Blue and White',          leader: '간츠',       bloc: 'mid', group: 'third' },
+  'כן':  { id: 'bluewhite',  ko: '청백당',               en: 'Blue and White',          leader: '간츠',       bloc: 'opp' },
   'אמת': { id: 'democrats',  ko: '민주당',               en: 'The Democrats',           leader: '골란',       bloc: 'opp' },
   'ל':   { id: 'yb',         ko: '이스라엘 베이테누',     en: 'Yisrael Beiteinu',        leader: '리베르만',   bloc: 'opp' },
   'די':  { id: 'reservists', ko: '예비군당',         en: 'The Reservists',          leader: '헨델',       bloc: 'mid', group: 'third' },
   'ך':   { id: 'amcha',      ko: '이스라엘 인민당',         en: 'Amcha Yisrael',           leader: '윈터',       bloc: 'opp' },
   'ודם': { id: 'joint',      ko: '공동명부',             en: 'Joint List',              leader: '자바린',     bloc: 'mid', group: 'arab' },
-  'עם':  { id: 'raam',       ko: '라암',                 en: "Ra'am",                   leader: '압바스',     bloc: 'mid', group: 'arab' },
+  'עם':  { id: 'raam',       ko: '라암',                 en: "Ra'am",                   leader: '압바스',     bloc: 'opp' },
   'ני':  { id: 'noam',       ko: '노암',                 en: 'Noam',                    leader: '마오즈',     bloc: 'mid', group: 'unaligned' },
 };
 const AGREEMENTS = [['מחל', 'ט'], ['שס', 'ג'], ['דרך', 'אמת'], ['רק', 'ל'], ['ודם', 'עם']];
