@@ -48,10 +48,10 @@ PARTIES = {
     'די':  ('reservists', '예비군당', 'The Reservists', '헨델·젤레카', 'mid'),
     'ך':   ('amcha', '이스라엘 인민당', 'Amcha Yisrael', '윈터', 'opp'),
     'ודם': ('joint', '공동명부', 'Joint List', '자바린·티비', 'mid'),
-    'עם':  ('raam', '라암', "Ra'am", '압바스', 'opp'),
+    'עם':  ('raam', '라암', "Ra'am", '압바스', 'mid'),
     'ני':  ('noam', '노암', 'Noam', '마오즈', 'mid'),
 }
-GROUP = {'joint': 'arab', 'reservists': 'third', 'noam': 'unaligned'}  # mid 진영 세부: 아랍 / 제3지대 / 무소속
+GROUP = {'joint': 'arab', 'raam': 'arab', 'reservists': 'third', 'noam': 'unaligned'}  # mid 진영 세부: 아랍 / 제3지대 / 무소속
 AGREEMENTS = [('מחל', 'ט'), ('שס', 'ג'), ('דרך', 'אמת'), ('רק', 'ל'), ('ודם', 'עם')]
 
 

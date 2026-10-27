@@ -45,7 +45,7 @@ const PARTIES = {
   'די':  { id: 'reservists', ko: '예비군당',         en: 'The Reservists',          leader: '헨델·젤레카',       bloc: 'mid', group: 'third' },
   'ך':   { id: 'amcha',      ko: '이스라엘 인민당',         en: 'Amcha Yisrael',           leader: '윈터',       bloc: 'opp' },
   'ודם': { id: 'joint',      ko: '공동명부',             en: 'Joint List',              leader: '자바린·티비',     bloc: 'mid', group: 'arab' },
-  'עם':  { id: 'raam',       ko: '라암',                 en: "Ra'am",                   leader: '압바스',     bloc: 'opp' },
+  'עם':  { id: 'raam',       ko: '라암',                 en: "Ra'am",                   leader: '압바스',     bloc: 'mid', group: 'arab' },
   'ני':  { id: 'noam',       ko: '노암',                 en: 'Noam',                    leader: '마오즈',     bloc: 'mid', group: 'unaligned' },
 };
 const AGREEMENTS = [['מחל', 'ט'], ['שס', 'ג'], ['דרך', 'אמת'], ['רק', 'ל'], ['ודם', 'עם']];
