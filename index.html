@@ -430,6 +430,11 @@ function adaptWatcher(j){
  *  정당별 득표는 [[기호, 표], ...] 또는 상위 parties(기호 목록) 순서의 숫자 배열 — 둘 다 처리 */
 function adaptNavon(j){
   const turnout = j.turnout && j.turnout.pct!=null ? { pct:+j.turnout.pct, time:j.turnout.time } : null;
+  if(turnout){                                   // 인사이트 문구에서 2022년 같은 시각 투표율 꺼내기
+    const ins = (j.insights||[]).find(x=>x && x.kind==='turnout-national');
+    const m = ins && /2022[^0-9]*?([\d.]+)%/.exec(ins.text||'');
+    if(m) turnout.prev = +m[1];
+  }
   const c = j.country || [];
   const vec = Array.isArray(c[4]) ? c[4] : [];
   const parties = [];
@@ -682,8 +687,16 @@ async function tick(){
       if(!rendered) render(emptyData());
       $('live').className='live off';
       if(d.turnout){                                     // 투표 진행 중: 선관위 시간대별 투표율 표시
-        $('kTurnout').innerHTML = `${d.turnout.pct.toFixed(1)}%<small style="display:block;font-size:16px;color:var(--muted)">${d.turnout.time||''} 기준</small>`;
-        $('statusText').textContent = `투표 진행 중 · ${d.turnout.time||''} 투표율 ${d.turnout.pct.toFixed(1)}%`;
+        const t = d.turnout, cmp = t.prev!=null ? ` (2022년 같은 시각 ${t.prev.toFixed(1)}%)` : '';
+        $('kTurnout').innerHTML = `${t.pct.toFixed(1)}%<small style="display:block;font-size:16px;color:var(--muted)">${t.time||''} 기준</small>`;
+        $('statusText').textContent = `투표 진행 중 · ${t.time||''} 투표율 ${t.pct.toFixed(1)}%`;
+        $('strapK').textContent = `투표율 ${t.pct.toFixed(1)}%`;
+        $('strapT').textContent = `현지 ${t.time||''} 기준 전국 투표율 ${t.pct.toFixed(1)}%${cmp} · 투표 종료 한국시간 05:00`;
+        const tk = `<span>현지 ${t.time||''} 투표율 <b>${t.pct.toFixed(1)}%</b>${cmp}</span><span>투표 종료 <b>한국시간 05:00</b> (현지 22:00)</span><span>개표가 시작되면 정당별 득표와 예상 의석을 실시간으로 전해 드립니다</span>`;
+        if(tk!==tickerKey){ $('ticker').innerHTML = tk; tickerKey = tk; }
+      } else {
+        $('strapK').textContent = '개표 대기';
+        $('strapT').textContent = '투표 종료(한국시간 05:00) 후 개표 상황을 실시간으로 전해 드립니다';
       }
       banner.style.display='none'; return;
     }
