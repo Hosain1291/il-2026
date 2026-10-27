@@ -2,10 +2,11 @@
 """개표 데이터를 받아 api/*.json 파일로 만든다.
 
 출처 (앞에서부터 차례로 시도)
-  1) 중앙선관위 공식 결과 — https://votes26.bechirot.gov.il/
+  1) 중앙선관위 공식 결과 — https://votes26.bechirot.gov.il/  (클라우드에서 막히면 건너뜀)
+  2) navonyaniv/election-il-2026 의 results.json (선관위 결과를 실시간으로 옮겨 GitHub Pages로 공개)
      결과 파일: https://media26.bechirot.gov.il/files/expc.csv (지역별)
      ※ 선관위는 GitHub 같은 클라우드 서버 접속을 막으므로, 집 컴퓨터에서 relay.py 로 돌릴 때 쓰임
-  2) johnnoto/israel-election-watcher 의 live.json (선관위 파일을 90초마다 중계하는 비공식 데이터)
+  3) johnnoto/israel-election-watcher 의 live.json (선관위 파일을 90초마다 중계하는 비공식 데이터)
 
 결과: api/results.json · api/localities.json · api/parties.json · api/status.json
 사용: python scripts/build_api.py            # 1 → 2 순서
@@ -19,6 +20,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'api')
 CEC_SITE = 'https://votes26.bechirot.gov.il/'
 CEC_EXPC = 'https://media26.bechirot.gov.il/files/expc.csv'
+NAVON = [
+    'https://navonyaniv.github.io/election-il-2026/results.json',
+    'https://raw.githubusercontent.com/navonyaniv/election-il-2026/main/results.json',
+]
 WATCHER = [
     'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',
     'https://johnnoto.github.io/israel-election-watcher/data/live.json',
@@ -106,6 +111,35 @@ def fetch_cec():
             'codes': codes, 'national': nat, 'locs': locs}
 
 
+def from_navon(j):
+    """navonyaniv/election-il-2026 results.json → live.json 형태."""
+    plist = [p if isinstance(p, str) else (p.get('letters') or p.get('letter') or '') for p in (j.get('parties') or [])]
+    def vec_of(row):
+        votes = {}
+        for i, x in enumerate(row[4] if len(row) > 4 and isinstance(row[4], list) else []):
+            if isinstance(x, list):
+                votes[str(x[0]).strip()] = votes.get(str(x[0]).strip(), 0) + num(x[1])
+            elif isinstance(x, dict):
+                k = (x.get('letters') or x.get('letter') or '').strip(); votes[k] = votes.get(k, 0) + num(x.get('votes', 0))
+            elif i < len(plist):
+                votes[plist[i].strip()] = votes.get(plist[i].strip(), 0) + num(x)
+        return votes
+    c = j.get('country') or [0, 0, 0, 0, []]
+    nv = vec_of(c)
+    codes = list(nv)
+    locs = []
+    for code, row in (j.get('towns') or {}).items():
+        tv = vec_of(row)
+        if sum(tv.values()):
+            locs.append([int(code), str(code), num(row[0]), num(row[1]), num(row[2]), None, [tv.get(k, 0) for k in codes]])
+    counting = sum(nv.values()) > 0
+    test = bool(j.get('rehearsal')) or datetime.now(timezone.utc) < POLLS_CLOSE
+    return {'status': 'counting' if counting else 'pre', 'test_env': test, 'cec_time': j.get('updated_label'),
+            'fetched_at': j.get('updated'), 'codes': codes,
+            'national': {'r': num(c[0]), 't': num(c[1]), 'x': num(c[2]), 'v': [nv[k] for k in codes]}, 'locs': locs,
+            'turnout': j.get('turnout')}
+
+
 def fetch(cec_only=False):
     errs = []
     try:
@@ -114,6 +148,11 @@ def fetch(cec_only=False):
         errs.append(f'선관위: {e}')
         if cec_only:
             raise SystemExit('선관위 데이터를 받지 못함: ' + str(e))
+    for url in NAVON:
+        try:
+            return from_navon(json.loads(get(url, 30))), url
+        except Exception as e:
+            errs.append(f'{url}: {e}')
     for url in WATCHER:
         try:
             return json.loads(get(url, 30)), url
@@ -241,7 +280,7 @@ def main():
         if old != text:
             open(path, 'w', encoding='utf-8').write(text); changed = True
     status_doc = {'checked_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': src,
-                  'status': status, 'data_updated': j.get('fetched_at'), 'cec_time': j.get('cec_time'), 'via': via}
+                  'status': status, 'data_updated': j.get('fetched_at'), 'cec_time': j.get('cec_time'), 'via': via, 'turnout': j.get('turnout')}
     if changed or via == 'relay' or not os.path.exists(os.path.join(OUT, 'status.json')):
         json.dump(status_doc, open(os.path.join(OUT, 'status.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
     print(('CHANGED' if changed else 'UNCHANGED') + f' status={status} valid={valid} localities={len(locs)}')

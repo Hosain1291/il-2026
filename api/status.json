@@ -1,8 +1,12 @@
 {
-  "checked_at": "2026-10-27T06:49:22Z",
-  "source": "https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json",
+  "checked_at": "2026-10-27T15:10:37Z",
+  "source": "https://raw.githubusercontent.com/navonyaniv/election-il-2026/main/results.json",
   "status": "pre",
-  "data_updated": null,
-  "cec_time": null,
-  "via": "actions"
+  "data_updated": "2026-10-27T17:01:15+02:00",
+  "cec_time": "17:01",
+  "via": "actions",
+  "turnout": {
+    "time": "14:00",
+    "pct": 44.9
+  }
 }

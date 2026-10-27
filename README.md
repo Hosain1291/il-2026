@@ -11,6 +11,7 @@
 
 ## 데이터
 - 기본: 중앙선관위 공식 결과(아래 '선관위 공식 결과 연동')
+- 실시간 피드: [navonyaniv/election-il-2026](https://github.com/navonyaniv/election-il-2026)의 `results.json` (선관위 결과를 옮겨 GitHub Pages로 공개, 투표 중에는 시간대별 투표율도 제공)
 - 예비: [johnnoto/israel-election-watcher](https://github.com/johnnoto/israel-election-watcher)의 `live.json` (선관위 파일을 90초마다 중계하는 비공식 데이터)
 - 투표 종료(한국시간 28일 05:00) 전에는 "개표 시작 전"으로 표시
 - `?src=주소` 로 다른 데이터 지정 가능 (`worker.js` API의 `/api/results`, 선관위 CSV `/files/expc.csv`)

@@ -311,6 +311,8 @@ const Q = new URLSearchParams(location.search);
 const CONFIG = {
   // 앞에서부터 차례로 시도하고, 성공한 주소를 계속 씀
   sources: Q.get('src') ? [Q.get('src')] : [
+    'https://navonyaniv.github.io/election-il-2026/results.json',                              // 선관위 결과 실시간 피드(navonyaniv/election-il-2026)
+    'https://raw.githubusercontent.com/navonyaniv/election-il-2026/main/results.json',           // 같은 피드 원본
     'https://media26.bechirot.gov.il/files/expc.csv',                                           // 중앙선관위 공식 결과 파일(직접 — 브라우저가 허용할 때만)
     'https://raw.githubusercontent.com/johnnoto/israel-election-watcher/main/data/live.json',  // 선관위 파일 중계본(90초마다, 설정 불필요)
     'api/results.json',                                                                         // 내 레포 API
@@ -421,6 +423,29 @@ function adaptWatcher(j){
   for(const m of Object.values(PARTIES)) if(!parties.some(p=>m.letters.includes(p.letter))) parties.push({letter:m.letters[0], votes:0});
   return { updated: j.fetched_at ? new Date(j.fetched_at) : new Date(), countedPct: Math.min(100, n.r/CONFIG.totalEligible*100),
            eligible:n.r, voted:n.t, valid: n.v.reduce((a,b)=>a+b,0), parties, cecTime: j.cec_time };
+}
+
+/* navonyaniv/election-il-2026 results.json 변환
+ *  country = [유권자, 투표자, 무효, 유효, 정당별 득표]  · turnout = {time, pct} (투표 중 시간대별 투표율)
+ *  정당별 득표는 [[기호, 표], ...] 또는 상위 parties(기호 목록) 순서의 숫자 배열 — 둘 다 처리 */
+function adaptNavon(j){
+  const turnout = j.turnout && j.turnout.pct!=null ? { pct:+j.turnout.pct, time:j.turnout.time } : null;
+  const c = j.country || [];
+  const vec = Array.isArray(c[4]) ? c[4] : [];
+  const parties = [];
+  const keyOf = x => typeof x==='string' ? x : (x && (x.letters||x.letter||x.l||x.code)) || '';
+  vec.forEach((x,i)=>{
+    if(Array.isArray(x)) parties.push({ letter:String(x[0]).trim(), votes:+x[1]||0 });
+    else if(x && typeof x==='object') parties.push({ letter:keyOf(x).trim(), votes:+(x.votes??x.v??0)||0 });
+    else parties.push({ letter:keyOf((j.parties||[])[i]).trim(), votes:+x||0 });
+  });
+  const valid = +c[3] || parties.reduce((a,p)=>a+p.votes,0);
+  const base = { turnout, updated: j.updated ? new Date(j.updated) : new Date() };
+  if(!valid) return { pre:true, ...base };
+  if(j.rehearsal) return { pre:true, test:true, ...base };
+  if(Date.now() < POLLS_CLOSE) return { pre:true, test:true, ...base };
+  for(const m of Object.values(PARTIES)) if(!parties.some(p=>m.letters.includes(p.letter))) parties.push({letter:m.letters[0], votes:0});
+  return { ...base, countedPct: Math.min(100, (+c[0]||0)/CONFIG.totalEligible*100), eligible:+c[0]||0, voted:+c[1]||0, valid, parties };
 }
 
 /* 내 워커 API(/api/results) 형식 변환 */
@@ -652,10 +677,14 @@ async function tick(){
   const banner = $('banner');
   try{
     const text = await fetchData();
-    const d = text.trim().startsWith('{') ? (j => j.api==='israel-election-live' ? adaptApi(j) : adaptWatcher(j))(JSON.parse(text)) : adapt(text);
+    const d = text.trim().startsWith('{') ? (j => j.api==='israel-election-live' ? adaptApi(j) : j.country ? adaptNavon(j) : adaptWatcher(j))(JSON.parse(text)) : adapt(text);
     if(d.pre){
       if(!rendered) render(emptyData());
       $('live').className='live off';
+      if(d.turnout){                                     // 투표 진행 중: 선관위 시간대별 투표율 표시
+        $('kTurnout').innerHTML = `${d.turnout.pct.toFixed(1)}%<small style="display:block;font-size:16px;color:var(--muted)">${d.turnout.time||''} 기준</small>`;
+        $('statusText').textContent = `투표 진행 중 · ${d.turnout.time||''} 투표율 ${d.turnout.pct.toFixed(1)}%`;
+      }
       banner.style.display='none'; return;
     }
     render(d); rendered=true; banner.style.display='none';
