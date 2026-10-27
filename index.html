@@ -145,7 +145,12 @@ html,body{height:100%;margin:0;background:#040a1a;overflow:hidden;overscroll-beh
 @keyframes scroll{to{transform:translateX(-100%)}}
 .clock{position:absolute;right:56px;bottom:14px;font-size:22px;color:var(--muted)}
 .clock b{color:var(--ink);font-family:'Cafe24ProSlim';font-size:26px;margin:0 18px 0 6px}
-.dots{position:absolute;left:56px;bottom:8px;display:flex;gap:6px;z-index:6}
+.sbar{position:absolute;left:56px;bottom:8px;display:flex;align-items:stretch;gap:10px;z-index:6}
+.dots{display:flex;gap:6px}
+.play{all:unset;cursor:pointer;width:46px;display:flex;align-items:center;justify-content:center;background:var(--red,#e2001a);color:#fff;font:700 18px 'Cafe24ProSlim',sans-serif;border-top:4px solid transparent}
+.play:hover{filter:brightness(1.15)}
+.play.paused{background:#fff;color:#0c0f16}
+body.paused .dots button.on::before{animation-play-state:paused}
 .dots button{all:unset;cursor:pointer;font:400 19px 'Cafe24ProSlim',sans-serif;color:var(--muted);padding:6px 14px 8px;border-top:4px solid rgba(255,255,255,.2);position:relative;overflow:hidden}
 .dots button:hover{color:var(--ink);border-top-color:rgba(255,255,255,.5)}
 .dots button.on{color:var(--ink);font-weight:700;border-top-color:rgba(255,200,61,.35)}
@@ -221,7 +226,9 @@ body.portrait .strap .k{font-size:30px}
 body.portrait .strap .t{font-size:30px;text-overflow:ellipsis}
 body.portrait .ticker{left:40px;right:40px;top:80px;height:64px}
 body.portrait .ticker .tt{font-size:30px}
-body.portrait .dots{left:40px;right:40px;bottom:40px;justify-content:space-between}
+body.portrait .sbar{left:40px;right:40px;bottom:40px}
+body.portrait .dots{flex:1;justify-content:space-between}
+body.portrait .play{width:72px;font-size:26px}
 body.portrait .dots button{font-size:26px;padding:10px 12px 12px;flex:1;text-align:center}
 body.portrait .status{display:none}
 body.portrait .clock{right:40px;bottom:auto;top:40px;font-size:20px;text-align:right;line-height:1.15}
@@ -300,6 +307,25 @@ body.portrait .scene .stitle{align-self:flex-start}
 .dots button.on::before{background:var(--red) !important}
 .legend .g{border-bottom:2px solid currentColor;padding-bottom:2px}
 .banner{background:var(--red) !important}
+.cnt{font-variant-numeric:tabular-nums}
+.cnt.rolling{filter:brightness(1.3)}
+
+/* 계수기(오도미터) */
+.odo{display:inline-flex;height:1em;line-height:1;overflow:hidden;vertical-align:top}
+.odo .dg{display:inline-block;height:1em;overflow:hidden}
+.odo .sp{display:flex;flex-direction:column;transition:transform 1.6s cubic-bezier(.2,.75,.15,1)}
+.odo .sp span{display:block;height:1em;line-height:1em;text-align:center}
+.side .big .odo{height:1em}
+/* 카드: 득표수·득표율 */
+.card > *{flex:none}
+.card .st{font-size:70px !important;padding-top:4px !important}
+.blocs .maj span{bottom:auto !important;top:-36px}
+body.portrait .card .st{font-size:80px !important}
+.card .pct{display:none}
+.card .vt{display:flex;justify-content:space-between;align-items:baseline;padding:2px 16px 12px;margin-top:auto;font-size:19px;color:var(--muted)}
+.card .vt b{font-size:28px;color:#fff}
+.row .nm small{display:block;font-size:17px;font-weight:400;color:var(--muted);line-height:1.1}
+.row{height:58px}
 </style>
 </head>
 <body>
@@ -352,11 +378,11 @@ body.portrait .scene .stitle{align-self:flex-start}
     <div class="ticker"><div class="tl">속보</div><div class="tw"><div class="tt" id="ticker">개표가 시작되면 정당별 득표가 여기에 표시됩니다</div></div></div>
   </div>
   <div class="nav prev" id="navPrev"><span>‹</span></div><div class="nav next" id="navNext"><span>›</span></div>
-  <div class="dots" id="dots"></div>
+  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><div class="dots" id="dots"></div></div>
   <div class="status" id="statusText">불러오는 중</div>
   <div class="clock">서울<b id="clkSeoul">--:--:--</b>예루살렘<b id="clkJer">--:--:--</b></div>
 </div>
-<div class="hint">아래 탭이나 화면 양옆을 눌러 장면 이동 · ← → 키 · F 전체 화면</div>
+<div class="hint">아래 탭·화면 양옆으로 장면 이동 · ❚❚ 버튼(스페이스)으로 멈춤/재생 · F 전체 화면</div>
 
 <script>
 /* ================= 설정 =================
@@ -563,6 +589,62 @@ const pctf = (n,d=1) => n.toFixed(d)+'%';
 const meta = p => PARTIES[p.letter] || { name: MINOR[p.ballot] || p.name || '기타 정당', color:'#6c7891', bloc:'oth' };
 let prevSeats = {}, tickerKey = '';
 
+/* ===== 계수기 애니메이션: 숫자가 이전 값에서 새 값까지 굴러 올라감 ===== */
+const shown = {};                                   // 마지막으로 화면에 보여 준 값 (key별)
+const C_MS = 1400;
+const ease = t => 1 - Math.pow(1 - t, 3);
+// 템플릿에 넣을 숫자: 일단 이전 값을 보여 주고, 그린 뒤 runCounters()가 새 값까지 굴림
+function cnt(key, to, dec=0, comma=false){
+  const from = shown[key] ?? 0; shown[key] = to;
+  const txt = dec ? (+from).toFixed(dec) : (comma ? (+from).toLocaleString('ko-KR') : from);
+  return `<span class="cnt" data-from="${from}" data-to="${to}" data-dec="${dec}"${comma?' data-comma="1"':''}>${txt}</span>`;
+}
+function roll(el, from, to, dec){
+  if(el._raf) cancelAnimationFrame(el._raf);
+  if(from === to){ el.textContent = (+to).toFixed(dec); return; }
+  const t0 = performance.now();
+  el.classList.add('rolling');
+  const step = now => {
+    const k = Math.min(1, (now - t0) / C_MS), v = from + (to - from) * ease(k);
+    el.textContent = dec ? v.toFixed(dec) : (el.dataset.comma ? Math.round(v).toLocaleString('ko-KR') : Math.round(v));
+    if(k < 1) el._raf = requestAnimationFrame(step); else { el.textContent = dec ? (+to).toFixed(dec) : (el.dataset.comma ? (+to).toLocaleString('ko-KR') : to); el.classList.remove('rolling'); }
+  };
+  el._raf = requestAnimationFrame(step);
+}
+function runCounters(root=document){
+  root.querySelectorAll('.cnt[data-to]').forEach(el=>{
+    const from=+el.dataset.from, to=+el.dataset.to, dec=+el.dataset.dec||0;
+    delete el.dataset.to; roll(el, from, to, dec);
+  });
+}
+/* 기계식 계수기(오도미터): 자리마다 0~9 숫자 띠가 위아래로 굴러감 — 의석수에 사용 */
+function odo(key, to){
+  const from = shown[key] ?? 0; shown[key] = to;
+  const n = String(Math.max(from, to, 0)).length;
+  const digits = v => String(v).padStart(n, ' ').split('');
+  const f = digits(from);
+  const strip = '<span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>&nbsp;</span>';
+  return `<span class="odo" data-to="${to}" data-n="${n}">` + f.map(ch=>`<span class="dg"><span class="sp" style="transform:translateY(${-(ch===' '?10:+ch)}em)">${strip}</span></span>`).join('') + '</span>';
+}
+function runOdos(root=document){
+  root.querySelectorAll('.odo[data-to]').forEach(el=>{
+    const t = String(el.dataset.to).padStart(+el.dataset.n, ' ').split('');
+    delete el.dataset.to;
+    const sps = el.querySelectorAll('.sp');
+    void el.offsetWidth;                                   // 처음 위치를 확정한 뒤 굴림
+    sps.forEach((sp,i)=>{ sp.style.transitionDelay = (sps.length-1-i)*0.12+'s'; sp.style.transform = `translateY(${-(t[i]===' '?10:+t[i])}em)`; });
+  });
+}
+function odoTo(id, to){ const el=$(id); if(!el) return; el.innerHTML = odo(id, to); runOdos(el); }
+
+// 고정 요소(큰 숫자 등)에 직접 굴리기
+function rollTo(id, to, dec=0, suffix=''){
+  const el=$(id); if(!el) return;
+  let span = el.querySelector(':scope > .cnt');
+  if(!span){ el.innerHTML = `<em class="cnt" style="font-style:normal">0</em>${suffix}`; span = el.querySelector(':scope > .cnt'); }
+  const from = shown[id] ?? 0; shown[id] = to; roll(span, from, to, dec);
+}
+
 function render(d){
   d = {...d, parties: d.parties.map(p=>({...p, ballot:p.letter, letter: resolveId(p)}))};
   const { seats, thrVotes } = allocate(d.parties, d.valid);
@@ -571,14 +653,14 @@ function render(d){
   const has = d.valid > 0;
   const main = list.filter(p=>PARTIES[p.letter] || p.seats);
 
-  $('kCounted').textContent = pctf(d.countedPct||0);
+  rollTo('kCounted', +(d.countedPct||0).toFixed(1), 1, '%');
   $('kBar').style.width = (d.countedPct||0)+'%';
   $('kTurnout').textContent = has && d.eligible ? pctf(d.voted/d.eligible*100) : '–';
 
   // 장면 1
   const bs = { coal:0, mid:0, opp:0, oth:0 };
   list.forEach(p=> bs[p.m.bloc] += p.seats);
-  $('sCoal').textContent = bs.coal; $('sOpp').textContent = bs.opp; $('sMid').textContent = bs.mid + bs.oth;
+  odoTo('sCoal', bs.coal); odoTo('sOpp', bs.opp); odoTo('sMid', bs.mid + bs.oth);
   let hl = '개표 시작을 기다리고 있습니다';
   if(has) hl = bs.coal>=61 ? `여당 과반 확보 예상` : bs.opp>=61 ? `야당 과반 확보 예상` : `과반 확보한 쪽 없음`;
   $('headline').textContent = hl;
@@ -591,9 +673,9 @@ function render(d){
   const order = [];
   ['coal','mid','oth','opp'].forEach(b=> list.filter(p=>p.m.bloc===b && p.seats).forEach(p=>{ for(let i=0;i<p.seats;i++) order.push(p.m.color); }));
   paintPlan(order);
-  $('planCtr').innerHTML = has ? `${bs.coal} : ${bs.opp}<small>여당 : 야당</small>` : '';
+  $('planCtr').innerHTML = has ? `${odo('ctrC',bs.coal)} : ${odo('ctrO',bs.opp)}<small>여당 : 야당</small>` : '';
   const lg = b => main.filter(p=>p.m.bloc===b && (p.seats || !has)).map(p=>
-    `<div class="it"><i style="background:${p.m.color}"></i><span>${p.m.name}</span><b>${p.seats}</b></div>`).join('');
+    `<div class="it"><i style="background:${p.m.color}"></i><span>${p.m.name}</span><b>${odo('lg'+p.letter,p.seats)}</b></div>`).join('');
   $('legend').innerHTML = `<div class="g" style="color:var(--coal)">여당<span class="num">${bs.coal}</span></div>${lg('coal')}`
     + `<div class="g" style="color:var(--opp)">야당<span class="num">${bs.opp}</span></div>${lg('opp')}`
     + `<div class="g" style="color:var(--mid)">아랍·제3지대·무소속<span class="num">${bs.mid}</span></div>${lg('mid')}`
@@ -602,16 +684,16 @@ function render(d){
   // 장면 2
   const top = main.slice(0, 15);
   const maxS = Math.max(...top.map(p=>p.seats), 10);
-  $('cols').innerHTML = top.map(p=>`<div class="col" style="--p:${p.seats/maxS}"><div class="cn">${p.m.name}</div><div class="v">${p.seats}</div>
+  $('cols').innerHTML = top.map(p=>`<div class="col" style="--p:${p.seats/maxS}"><div class="cn">${p.m.name}</div><div class="v">${odo('col'+p.letter,p.seats)}</div>
     <div class="bar" style="background:linear-gradient(180deg,${p.m.color},${p.m.color}cc)"></div></div>`).join('');
   $('colnames').innerHTML = top.map(p=>`<div>${p.m.name}<small>${p.m.leader||''}</small></div>`).join('');
 
   // 장면 3
   const byVote = [...main].sort((a,b)=>b.votes-a.votes).slice(0,16);
   const maxP = Math.max(...byVote.map(p=>p.share), 10);
-  $('rows').innerHTML = byVote.map(p=>`<div class="row ${has&&p.votes<thrVotes?'out':''}"><div class="nm">${p.m.name}</div>
+  $('rows').innerHTML = byVote.map(p=>`<div class="row ${has&&p.votes<thrVotes?'out':''}"><div class="nm">${p.m.name}<small>${cnt('rv'+p.letter,p.votes,0,true)}표</small></div>
     <div class="tr"><i style="width:${p.share/maxP*100}%;background:${p.m.color}"></i><span class="thr" style="left:${3.25/maxP*100}%"></span></div>
-    <div class="pc">${pctf(p.share)}</div></div>`).join('');
+    <div class="pc">${cnt('rp'+p.letter,+p.share.toFixed(1),1)}%</div></div>`).join('');
   $('validNote').textContent = has ? `유효표 ${fmt(d.valid)}표 · 의석 최소 ${fmt(Math.ceil(thrVotes))}표` : '';
 
   // 장면 4
@@ -620,7 +702,8 @@ function render(d){
     return `<div class="card ${has&&p.votes<thrVotes?'out':''} ${changed?'flash':''}" style="--c:${p.m.color}">
       <span class="tag" style="background:${BLOCS[p.m.bloc].color}">${p.m.tag||BLOCS[p.m.bloc].label}</span>
       <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||''}</div>
-      <div class="st">${p.seats}<small> 석</small></div><div class="pct">${pctf(p.share)}</div></div>`;
+      <div class="st">${odo('card'+p.letter,p.seats)}<small> 석</small></div>
+      <div class="vt"><span>득표 ${cnt('vt'+p.letter,p.votes,0,true)}표</span><b>${cnt('pct'+p.letter,+p.share.toFixed(2),2)}%</b></div></div>`;
   }).join('');
   prevSeats = Object.fromEntries(list.map(p=>[p.letter,p.seats]));
 
@@ -633,6 +716,7 @@ function render(d){
     const key = items.join('');
     if(key!==tickerKey){ $('ticker').innerHTML = items.join(''); tickerKey=key; }
   }
+  runCounters(); runOdos();
   $('live').className = 'live ' + (has && d.countedPct<100 ? '' : 'off');
   $('statusText').textContent = has
     ? (d.countedPct>=100?'개표 완료 · ':'') + d.updated.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' 기준'
@@ -678,9 +762,29 @@ function show(i){
   scenes.forEach((s,j)=>{ s.classList.remove('leave'); if(j===cur && j!==i) s.classList.add('leave'); s.classList.toggle('on', j===i); });
   cur = (i+scenes.length)%scenes.length;
   [...$('dots').children].forEach((d,j)=>{ d.classList.remove('on'); void d.offsetWidth; if(j===cur){ d.style.setProperty('--dur', SCENE_SEC+'s'); d.classList.add('on'); } });
-  clearTimeout(sceneTimer); sceneTimer = setTimeout(()=>show((cur+1)%scenes.length), SCENE_SEC*1000);
+  schedule(SCENE_SEC*1000);
 }
+/* ===== 자동 넘김 일시정지 / 재생 ===== */
+let paused = false, dueAt = 0, remain = 0;
+function schedule(ms){
+  clearTimeout(sceneTimer); remain = ms;
+  if(paused) return;
+  dueAt = Date.now() + ms;
+  sceneTimer = setTimeout(()=>show((cur+1)%scenes.length), ms);
+}
+function setPaused(p){
+  paused = p;
+  document.body.classList.toggle('paused', p);
+  const b = $('playBtn');
+  b.textContent = p ? '▶' : '❚❚';
+  b.classList.toggle('paused', p);
+  b.setAttribute('aria-label', p ? '장면 자동 넘김 재생' : '장면 자동 넘김 멈춤');
+  if(p){ clearTimeout(sceneTimer); remain = Math.max(0, dueAt - Date.now()); }
+  else schedule(remain || SCENE_SEC*1000);
+}
+$('playBtn').addEventListener('click', ()=>setPaused(!paused));
 document.addEventListener('keydown', e=>{
+  if(e.key===' '){ e.preventDefault(); setPaused(!paused); }
   if(e.key==='ArrowRight') show((cur+1)%scenes.length);
   if(e.key==='ArrowLeft') show((cur-1+scenes.length)%scenes.length);
   if(e.key==='f'||e.key==='F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
