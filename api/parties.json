@@ -52,7 +52,7 @@
       "id": "rzp",
       "name": "종교시오니즘당",
       "name_en": "Religious Zionism–Zehut",
-      "leader": "스모트리치",
+      "leader": "스모트리치·페이글린",
       "bloc": "gov",
       "group": null
     },
@@ -70,7 +70,7 @@
       "id": "utj",
       "name": "토라유대주의연합",
       "name_en": "United Torah Judaism",
-      "leader": "골드크노프",
+      "leader": "아셰르",
       "bloc": "gov",
       "group": null
     },
@@ -79,7 +79,7 @@
       "id": "together",
       "name": "비야하드",
       "name_en": "Together",
-      "leader": "베네트",
+      "leader": "베네트·라피드",
       "bloc": "opp",
       "group": null
     },
@@ -89,15 +89,6 @@
       "name": "야샤르당",
       "name_en": "Yashar",
       "leader": "아이젠코트",
-      "bloc": "opp",
-      "group": null
-    },
-    {
-      "letter": "כן",
-      "id": "bluewhite",
-      "name": "청백당",
-      "name_en": "Blue and White",
-      "leader": "간츠",
       "bloc": "opp",
       "group": null
     },
@@ -124,7 +115,7 @@
       "id": "reservists",
       "name": "예비군당",
       "name_en": "The Reservists",
-      "leader": "헨델",
+      "leader": "헨델·젤레카",
       "bloc": "mid",
       "group": "third"
     },
@@ -142,7 +133,7 @@
       "id": "joint",
       "name": "공동명부",
       "name_en": "Joint List",
-      "leader": "자바린",
+      "leader": "자바린·티비",
       "bloc": "mid",
       "group": "arab"
     },
