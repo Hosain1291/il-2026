@@ -326,6 +326,16 @@ body.portrait .card .st{font-size:80px !important}
 .card .vt b{font-size:28px;color:#fff}
 .row .nm small{display:block;font-size:17px;font-weight:400;color:var(--muted);line-height:1.1}
 .row{height:58px}
+
+/* 일반/절전 버튼 */
+.mode{all:unset;cursor:pointer;padding:0 12px;display:flex;align-items:center;justify-content:center;background:#2a2e38;color:#fff;font:700 17px 'Cafe24ProSlim',sans-serif;border-top:4px solid transparent;white-space:nowrap}
+.mode.on{background:#1f7a4d}
+body.portrait .mode{font-size:24px;padding:0 16px}
+/* 절전 모드 */
+body.saver #stage{filter:brightness(.62)}
+body.saver *,body.saver *::before,body.saver *::after{animation:none !important;transition:none !important}
+body.saver .ticker .tt{padding-left:16px}
+body.saver .side .big{text-shadow:none}
 </style>
 </head>
 <body>
@@ -378,7 +388,7 @@ body.portrait .card .st{font-size:80px !important}
     <div class="ticker"><div class="tl">속보</div><div class="tw"><div class="tt" id="ticker">개표가 시작되면 정당별 득표가 여기에 표시됩니다</div></div></div>
   </div>
   <div class="nav prev" id="navPrev"><span>‹</span></div><div class="nav next" id="navNext"><span>›</span></div>
-  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><div class="dots" id="dots"></div></div>
+  <div class="sbar"><button type="button" class="play" id="playBtn" aria-label="장면 자동 넘김 멈춤">❚❚</button><button type="button" class="mode" id="modeBtn" aria-label="절전 모드로 바꾸기">일반</button><div class="dots" id="dots"></div></div>
   <div class="status" id="statusText">불러오는 중</div>
   <div class="clock">서울<b id="clkSeoul">--:--:--</b>예루살렘<b id="clkJer">--:--:--</b></div>
 </div>
@@ -601,7 +611,7 @@ function cnt(key, to, dec=0, comma=false){
 }
 function roll(el, from, to, dec){
   if(el._raf) cancelAnimationFrame(el._raf);
-  if(from === to){ el.textContent = (+to).toFixed(dec); return; }
+  if(from === to || saver){ el.textContent = dec ? (+to).toFixed(dec) : (el.dataset.comma ? (+to).toLocaleString('ko-KR') : to); el.classList.remove('rolling'); return; }
   const t0 = performance.now();
   el.classList.add('rolling');
   const step = now => {
@@ -752,6 +762,8 @@ function paintPlan(order){
 
 /* ===== 장면 자동 전환 (방송 순서처럼 돌아감) ===== */
 const SCENE_SEC = 12;
+let saver = false;                                  // 절전 모드
+const sceneSec = () => saver ? 30 : SCENE_SEC;
 const scenes = [...document.querySelectorAll('.scene')];
 let cur = 0, sceneTimer;
 $('dots').innerHTML = scenes.map((s,i)=>`<button type="button" data-i="${i}">${s.dataset.name}</button>`).join('');
@@ -761,8 +773,8 @@ $('navNext').addEventListener('click', ()=>show((cur+1)%scenes.length));
 function show(i){
   scenes.forEach((s,j)=>{ s.classList.remove('leave'); if(j===cur && j!==i) s.classList.add('leave'); s.classList.toggle('on', j===i); });
   cur = (i+scenes.length)%scenes.length;
-  [...$('dots').children].forEach((d,j)=>{ d.classList.remove('on'); void d.offsetWidth; if(j===cur){ d.style.setProperty('--dur', SCENE_SEC+'s'); d.classList.add('on'); } });
-  schedule(SCENE_SEC*1000);
+  [...$('dots').children].forEach((d,j)=>{ d.classList.remove('on'); void d.offsetWidth; if(j===cur){ d.style.setProperty('--dur', sceneSec()+'s'); d.classList.add('on'); } });
+  schedule(sceneSec()*1000);
 }
 /* ===== 자동 넘김 일시정지 / 재생 ===== */
 let paused = false, dueAt = 0, remain = 0;
@@ -780,7 +792,7 @@ function setPaused(p){
   b.classList.toggle('paused', p);
   b.setAttribute('aria-label', p ? '장면 자동 넘김 재생' : '장면 자동 넘김 멈춤');
   if(p){ clearTimeout(sceneTimer); remain = Math.max(0, dueAt - Date.now()); }
-  else schedule(remain || SCENE_SEC*1000);
+  else schedule(remain || sceneSec()*1000);
 }
 $('playBtn').addEventListener('click', ()=>setPaused(!paused));
 document.addEventListener('keydown', e=>{
@@ -877,7 +889,7 @@ async function tick(){
   }
 }
 let nextAt = 0, busy = false;
-async function loop(){ if(busy) return; busy=true; await tick(); busy=false; nextAt = Date.now()+CONFIG.refreshSec*1000; }
+async function loop(){ if(busy) return; busy=true; await tick(); busy=false; nextAt = Date.now()+(saver?60:CONFIG.refreshSec)*1000; }
 setInterval(()=>{ clocks(); if(Date.now()>=nextAt) loop(); }, 1000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loop(); });
 clocks(); loadPlan(); loop(); show(0);
@@ -886,7 +898,7 @@ clocks(); loadPlan(); loop(); show(0);
  * 다른 탭으로 가면 브라우저가 풀어 버리므로 돌아올 때 다시 요청. 일부 브라우저는 화면을 한 번 눌러야 켜짐. */
 let wakeLock = null;
 async function keepAwake(){
-  if(!('wakeLock' in navigator) || document.hidden || wakeLock) return;
+  if(saver || !('wakeLock' in navigator) || document.hidden || wakeLock) return;
   try{
     wakeLock = await navigator.wakeLock.request('screen');
     wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
@@ -895,6 +907,26 @@ async function keepAwake(){
 keepAwake();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) keepAwake(); });
 ['click','touchend','keydown'].forEach(ev=>addEventListener(ev, keepAwake, {passive:true}));
+
+/* ===== 일반 / 절전 모드 =====
+ * 절전: 화면 꺼짐 허용, 화면 밝기 낮춤, 움직이는 효과(자막 흐름·깜빡임·숫자 굴림) 끔,
+ *       데이터 확인 60초·장면 넘김 30초로 늘림. 선택은 이 기기에 기억. */
+function setSaver(on){
+  saver = on;
+  document.body.classList.toggle('saver', on);
+  const b = $('modeBtn');
+  b.textContent = on ? '절전' : '일반';
+  b.classList.toggle('on', on);
+  b.setAttribute('aria-label', on ? '일반 모드로 바꾸기' : '절전 모드로 바꾸기');
+  try{ localStorage.setItem('il2026-saver', on ? '1' : '0'); }catch(e){}
+  if(on){ if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; } }
+  else keepAwake();
+  if(!paused) schedule(sceneSec()*1000);
+  nextAt = Math.min(nextAt, Date.now() + (on?60:CONFIG.refreshSec)*1000);
+}
+$('modeBtn').addEventListener('click', ()=>setSaver(!saver));
+(()=>{ let v=null; try{ v = localStorage.getItem('il2026-saver'); }catch(e){}
+       if(v==='1') setSaver(true); })();
 setTimeout(()=>document.querySelector('.hint').style.opacity=0, 6000);
 </script>
 </body>
