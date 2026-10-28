@@ -425,7 +425,8 @@ body:not(.portrait) .seatmap svg{max-height:420px !important}
 /* 지도 */
 .mapwrap{display:grid;grid-template-columns:1fr 720px;gap:30px;height:600px}
 .mapbox{position:relative;display:flex;justify-content:center;gap:10px;min-height:0}
-.mapbox figure{margin:0;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.mapbox figure{margin:0;flex:1;min-width:0;display:none;flex-direction:column;align-items:center}
+.mapbox figure.on{display:flex}
 .mapbox figcaption{font-size:20px;font-weight:700;margin-bottom:6px;white-space:nowrap}
 .mapbox figcaption .pm{font-size:16px}
 svg.isrmap{flex:1;min-height:0;width:100%}
@@ -516,10 +517,11 @@ body.portrait .mtip{font-size:24px;min-width:380px}
     <div class="stitle">지역별 결과 <small id="mapNote">geoBoundaries 행정구역</small></div>
     <div class="mapwrap">
       <div class="mapbox">
-        <figure><figcaption><span class="pm pm-pro">친</span> 대 <span class="pm pm-anti">반</span> 네타냐후</figcaption><svg class="isrmap" data-mode="pm" viewBox="0 0 600 1600"></svg></figure>
-        <figure><figcaption>1위 정당 색깔</figcaption><svg class="isrmap" data-mode="lead" viewBox="0 0 600 1600"></svg></figure>
+        <figure data-mode="pm" class="on"><svg class="isrmap" data-mode="pm" viewBox="0 0 600 1600"></svg></figure>
+        <figure data-mode="lead"><svg class="isrmap" data-mode="lead" viewBox="0 0 600 1600"></svg></figure>
         <div class="mtip" id="mtip"></div></div>
       <div class="mside">
+        <div class="mmode"><button type="button" data-m="pm" class="on">진영 (친·반 네타냐후)</button><button type="button" data-m="lead">정당별 1위</button></div>
                 <div class="mlegend" id="mlegend"></div>
         <div class="mlist" id="mlist"></div>
       </div>
@@ -688,7 +690,17 @@ const PM = { pro:{t:'친네타냐후', c:'#2a6be0'}, anti:{t:'반네타냐후', 
 const pmTag = m => m && m.pm ? `<span class="pm pm-${m.pm}">${PM[m.pm].t}</span>` : '';
 
 /* ===== 지도 (geoBoundaries 도·군 경계) ===== */
-let MAP = null, lastMapD = null;
+let MAP = null, lastMapD = null, mapMode = 'pm';
+try{ mapMode = localStorage.getItem('il2026-map') || 'pm'; }catch(e){}
+function setMapMode(m){
+  mapMode = m;
+  document.querySelectorAll('.mmode button').forEach(x=>x.classList.toggle('on', x.dataset.m===m));
+  document.querySelectorAll('.mapbox figure').forEach(f=>f.classList.toggle('on', f.dataset.mode===m));
+  try{ localStorage.setItem('il2026-map', m); }catch(e){}
+  if(lastMapD) renderMap(lastMapD); else if(MAP) ensureLabels();
+}
+document.querySelectorAll('.mmode button').forEach(b=>b.addEventListener('click', ev=>{ ev.stopPropagation(); setMapMode(b.dataset.m); }));
+setMapMode(mapMode);
 async function loadMap(){
   try{
     const r = await fetch('map.json', {cache:'no-store'}); MAP = await r.json();
@@ -699,10 +711,6 @@ async function loadMap(){
         + MAP.adm1.map(g=>`<path class="a1" d="${g.d}"/>`).join('') + `<g class="mlabels"></g>`;
       svg.addEventListener('click', e=>{ const p=e.target.closest('path.a2'); if(p) showTip(+p.dataset.i); else $('mtip').style.display='none'; });
     });
-    requestAnimationFrame(()=>document.querySelectorAll('svg.isrmap').forEach(svg=>{
-      const ps=[...svg.querySelectorAll('path.a2')];
-      svg.querySelector('.mlabels').innerHTML = ps.map((p,i)=>{ const b=p.getBBox(); return b.width*b.height>1500 ? `<text x="${b.x+b.width/2}" y="${b.y+b.height/2}">${MAP.adm2[i].n}</text>` : ''; }).join('');
-    }));
     if(lastMapD) renderMap(lastMapD);
   }catch(e){ console.warn('지도 파일을 불러오지 못함:', e.message); }
 }
@@ -750,18 +758,26 @@ function showTip(i){
     : '<div>아직 개표 결과 없음</div>');
   tip.style.display = 'block';
 }
+function ensureLabels(){
+  document.querySelectorAll('.mapbox figure.on svg.isrmap').forEach(svg=>{
+    const g = svg.querySelector('.mlabels'); if(!g || g.childElementCount) return;
+    const ps=[...svg.querySelectorAll('path.a2')]; if(!ps.length || !ps[0].getBBox().width) return;
+    g.innerHTML = ps.map((p,i)=>{ const b=p.getBBox(); return b.width*b.height>1500 ? `<text x="${b.x+b.width/2}" y="${b.y+b.height/2}">${MAP.adm2[i].n}</text>` : ''; }).join('');
+  });
+}
 function renderMap(d){
   lastMapD = d;
   if(!MAP) return;
+  ensureLabels();
   if(!d.towns){ $('mlist').innerHTML = '<div class="mr"><span class="mz">지역별 데이터가 없는 데이터 출처입니다</span></div>'; return; }
   mapAgg = aggregate(d);
   document.querySelectorAll('svg.isrmap').forEach(svg=>{ const m=svg.dataset.mode; svg.querySelectorAll('path.a2').forEach((p,i)=>p.setAttribute('fill', fillOf(mapAgg.a2[i], m))); });
   $('mlist').innerHTML = '<div class="mh"><span>도</span><span>1위 정당</span><span><b class="p">친</b> : <b class="a">반</b> 네타냐후 %</span></div>'
     + MAP.adm1.map((g,i)=>regionRow(g.n, mapAgg.a1[i])).join('') + regionRow('서안(유대·사마리아)', mapAgg.wb);
-  $('mapNote').textContent = 'geoBoundaries 행정구역(군) · 진할수록 격차 큼 · 지역을 누르면 상세';
-  const seen = {}; [...mapAgg.a2, ...mapAgg.a1, mapAgg.wb].forEach(r=>{ if(r.valid){ const t=r.top[0]; seen[t.m.name]=t.m.color; } });
-  $('mlegend').innerHTML = '<span><i style="background:#2a6be0"></i>친네타냐후 우세</span><span><i style="background:#e2001a"></i>반네타냐후 우세</span><span class="sep"></span>'
-    + Object.entries(seen).map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('');
+  $('mapNote').textContent = (mapMode==='pm' ? '진영: 친네타냐후(파랑) 대 반네타냐후(빨강)' : '정당별 1위: 지역마다 1등 한 정당 색') + ' · 진할수록 격차 큼 · 지역을 누르면 상세';
+  if(mapMode==='pm') $('mlegend').innerHTML = '<span><i style="background:#2a6be0"></i>친네타냐후 우세</span><span><i style="background:#e2001a"></i>반네타냐후 우세</span>';
+  else { const seen = {}; [...mapAgg.a2, ...mapAgg.a1, mapAgg.wb].forEach(r=>{ if(r.valid){ const t=r.top[0]; seen[t.m.name]=t.m.color; } });
+         $('mlegend').innerHTML = Object.entries(seen).map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join(''); }
 }
 
 /* 출구조사 방송사 이름 */
@@ -1097,6 +1113,7 @@ $('navNext').addEventListener('click', ()=>show((cur+1)%scenes.length));
 function show(i){
   scenes.forEach((s,j)=>{ s.classList.remove('leave'); if(j===cur && j!==i) s.classList.add('leave'); s.classList.toggle('on', j===i); });
   cur = (i+scenes.length)%scenes.length;
+  if(scenes[cur].dataset.name==='지도' && MAP) requestAnimationFrame(ensureLabels);
   [...$('dots').children].forEach((d,j)=>{ d.classList.remove('on'); void d.offsetWidth; if(j===cur){ d.style.setProperty('--dur', sceneSec()+'s'); d.classList.add('on'); } });
   schedule(sceneSec()*1000);
 }
