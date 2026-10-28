@@ -373,6 +373,20 @@ body.portrait .ap .az{white-space:nowrap}
 body.portrait .ap .av{display:none}
 .status{left:auto !important;right:490px;text-align:right;white-space:nowrap}
 .dots button{padding:6px 11px 8px}
+
+/* 정당별 의석 차트: 화면 높이·폭에 맞춰 막대 구간을 꽉 채움 */
+.scene[data-name="정당별 의석"].on{display:flex;flex-direction:column}
+.colwrap{flex:1;min-height:0;display:flex;flex-direction:column}
+.colwrap .cols{flex:1;min-height:0;height:auto !important}
+.col{height:100%}
+.col .bar{height:calc(var(--p) * (100% - 80px)) !important}
+body.portrait .colwrap .cols{flex:1;justify-content:space-evenly}
+body.portrait .col{height:auto}
+body.portrait .col .bar{height:48px !important;width:calc(var(--p) * (100% - 400px)) !important}
+/* 16:9보다 세로가 긴 가로 화면(폴드 등): 표·카드는 남는 높이 가운데로 */
+body:not(.portrait) .scene.on:not([data-name="정당별 의석"]){display:flex;flex-direction:column;justify-content:center}
+body:not(.portrait) .scene.on .stitle{align-self:flex-start}
+@media (max-width:1100px){.hint{display:none}}
 </style>
 </head>
 <body>
@@ -406,7 +420,7 @@ body.portrait .ap .av{display:none}
 
   <section class="scene" data-name="정당별 의석">
     <div class="stitle">정당별 예상 의석 <small>바데르-오페르 방식 추정</small></div>
-    <div class="cols" id="cols"></div><div class="colnames" id="colnames"></div>
+    <div class="colwrap"><div class="cols" id="cols"></div><div class="colnames" id="colnames"></div></div>
   </section>
 
   <section class="scene" data-name="정당별 득표율">
