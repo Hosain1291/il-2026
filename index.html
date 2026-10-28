@@ -356,7 +356,7 @@ body.portrait .dots button{font-size:21px !important;padding:10px 4px 12px !impo
 body.zoomed .sbar,body.zoomed .nav{opacity:.35}
 
 /* 전체 정당 */
-.allp{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-flow:column;grid-template-rows:repeat(12,auto);column-gap:34px;row-gap:2px}
+.allp{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-flow:column;grid-template-rows:repeat(var(--rows,12),auto);column-gap:34px;row-gap:2px}
 .ap{display:grid;grid-template-columns:30px 14px 1fr auto 70px 46px;align-items:center;column-gap:8px;height:42px;font-size:19px;position:relative;border-bottom:1px solid #1c1f27}
 .ap .rk{color:#6f7787;font-size:16px;text-align:right}
 .ap i{width:14px;height:14px}
@@ -367,7 +367,9 @@ body.zoomed .sbar,body.zoomed .nav{opacity:.35}
 .ap .ab{position:absolute;left:52px;right:0;bottom:2px;height:3px}
 .ap .ab b{display:block;height:100%}
 .ap.out{opacity:.55}
-body.portrait .allp{grid-template-columns:1fr 1fr;grid-template-rows:repeat(18,auto);column-gap:24px}
+body.portrait .allp{grid-template-columns:1fr 1fr;grid-template-rows:repeat(var(--rows,18),auto);column-gap:24px}
+body.portrait .ap .pm{display:none}
+body.portrait .ap{height:42px}
 body.portrait .ap{height:46px;font-size:21px;grid-template-columns:28px 14px 1fr 80px 58px;}
 body.portrait .ap .az{white-space:nowrap}
 body.portrait .ap .av{display:none}
@@ -387,6 +389,13 @@ body.portrait .col .bar{height:48px !important;width:calc(var(--p) * (100% - 400
 body:not(.portrait) .scene.on:not([data-name="정당별 의석"]){display:flex;flex-direction:column;justify-content:center}
 body:not(.portrait) .scene.on .stitle{align-self:flex-start}
 @media (max-width:1100px){.hint{display:none}}
+
+/* 친/반 네타냐후 표기 */
+.pm{display:inline-block;font-size:.72em;font-weight:700;padding:1px 7px;border-radius:3px;color:#fff;vertical-align:middle;line-height:1.35;white-space:nowrap}
+.pm-pro{background:#2a6be0}.pm-anti{background:#e2001a}.pm-neutral{background:#555c6a}
+.card .ld .pm{font-size:15px;margin-left:4px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.55)}
+.colnames small .pm{font-size:14px;margin-top:3px}
+.ap .an .pm{font-size:13px;margin-left:4px}
 </style>
 </head>
 <body>
@@ -493,20 +502,20 @@ const CONFIG = {
  *   아랍: 공동명부·라암 / 제3지대: 예비군당 / 무소속: 노암
  *   청백당은 10월 19일 사퇴(투표용지 회수) — 목록에서 제외 */
 const PARTIES = {
-  likud:      { name:'리쿠드당', leader:'네타냐후', color:'#2a6be0', bloc:'coal', letters:['מחל'] },
-  otzma:      { name:'유대의 힘', leader:'벤그비르', color:'#e8a33a', bloc:'coal', letters:['ב'] },
-  rzp:        { name:'종교시오니즘당', leader:'스모트리치·페이글린', color:'#9a7ed0', bloc:'coal', letters:['ט'] },
-  shas:       { name:'샤스', leader:'데리', color:'#4a6fb0', bloc:'coal', letters:['שס'] },
-  utj:        { name:'토라유대주의연합', leader:'아셰르', color:'#9aa4b2', bloc:'coal', letters:['ג'] },
-  together:   { name:'비야하드', leader:'베네트·라피드', color:'#2fb5c9', bloc:'opp', letters:['רק'] },
-  yashar:     { name:'야샤르당', leader:'아이젠코트', color:'#3a7d5c', bloc:'opp', letters:['דרך'] },
-  democrats:  { name:'민주당', leader:'골란', color:'#d6453d', bloc:'opp', letters:['אמת'] },
-  yb:         { name:'이스라엘 베이테누', leader:'리베르만', color:'#5a9e2f', bloc:'opp', letters:['ל'] },
-  reservists: { name:'예비군당', leader:'헨델·젤레카', color:'#b8925a', bloc:'mid', tag:'제3지대', letters:['די'] },
-  amcha:      { name:'이스라엘 인민당', leader:'윈터', color:'#93a83c', bloc:'opp', letters:['ך'] },
-  joint:      { name:'공동명부', leader:'자바린·티비', color:'#b23a48', bloc:'mid', tag:'아랍', letters:['ודם'] },
-  raam:       { name:'라암', leader:'압바스', color:'#2e7d32', bloc:'mid', tag:'아랍', letters:['עם'] },
-  noam:       { name:'노암', leader:'마오즈', color:'#c47a4f', bloc:'mid', tag:'무소속', letters:['ני'] },
+  likud:      { name:'리쿠드당', pm:'pro', leader:'네타냐후', color:'#2a6be0', bloc:'coal', letters:['מחל'] },
+  otzma:      { name:'유대의 힘', pm:'pro', leader:'벤그비르', color:'#e8a33a', bloc:'coal', letters:['ב'] },
+  rzp:        { name:'종교시오니즘당', pm:'pro', leader:'스모트리치·페이글린', color:'#9a7ed0', bloc:'coal', letters:['ט'] },
+  shas:       { name:'샤스', pm:'pro', leader:'데리', color:'#4a6fb0', bloc:'coal', letters:['שס'] },
+  utj:        { name:'토라유대주의연합', pm:'pro', leader:'아셰르', color:'#9aa4b2', bloc:'coal', letters:['ג'] },
+  together:   { name:'비야하드', pm:'anti', leader:'베네트·라피드', color:'#2fb5c9', bloc:'opp', letters:['רק'] },
+  yashar:     { name:'야샤르당', pm:'anti', leader:'아이젠코트', color:'#3a7d5c', bloc:'opp', letters:['דרך'] },
+  democrats:  { name:'민주당', pm:'anti', leader:'골란', color:'#d6453d', bloc:'opp', letters:['אמת'] },
+  yb:         { name:'이스라엘 베이테누', pm:'anti', leader:'리베르만', color:'#5a9e2f', bloc:'opp', letters:['ל'] },
+  reservists: { name:'예비군당', pm:'neutral', leader:'헨델·젤레카', color:'#b8925a', bloc:'mid', tag:'제3지대', letters:['די'] },
+  amcha:      { name:'이스라엘 인민당', pm:'pro', leader:'윈터', color:'#93a83c', bloc:'opp', letters:['ך'] },
+  joint:      { name:'공동명부', pm:'anti', leader:'자바린·티비', color:'#b23a48', bloc:'mid', tag:'아랍', letters:['ודם'] },
+  raam:       { name:'라암', pm:'anti', leader:'압바스', color:'#2e7d32', bloc:'mid', tag:'아랍', letters:['עם'] },
+  noam:       { name:'노암', pm:'pro', leader:'마오즈', color:'#c47a4f', bloc:'mid', tag:'무소속', letters:['ני'] },
 };
 /* 의석 가능성이 낮은 나머지 23개 군소정당 — 기호 → 표시 이름 */
 const MINOR = {
@@ -589,6 +598,11 @@ function adaptWatcher(j){
 
 /* 개표가 조금이라도 들어오면 바로 실제 개표로 의석 계산 (0 = 출구조사 대체 안 함). 출구조사는 '출구조사' 장면에서 따로 봄 */
 const EXIT_UNTIL = 0;
+
+/* 네타냐후 지지 여부 표기 — 출처: israel-election-watcher의 진영 분류(Netanyahu / Opposition / Arab / Unaligned)
+ *  pro 친네타냐후 · anti 반네타냐후 · neutral 중립(어느 쪽도 공식 지지 안 함) */
+const PM = { pro:{t:'친네타냐후', c:'#2a6be0'}, anti:{t:'반네타냐후', c:'#e2001a'}, neutral:{t:'중립', c:'#6c7891'} };
+const pmTag = m => m && m.pm ? `<span class="pm pm-${m.pm}">${PM[m.pm].t}</span>` : '';
 
 /* 출구조사 방송사 이름 */
 const BROADCASTERS = { 'חדשות 12':'채널12', 'חדשות 13':'채널13', 'כאן 11':'칸11(공영)', 'i24NEWS':'i24뉴스', 'ערוץ 14':'채널14', 'חדשות 16':'채널16' };
@@ -769,6 +783,8 @@ function render(d){
 
   // 장면 1
   const bs = { coal:0, mid:0, opp:0, oth:0 };
+  const pmS = { pro:0, anti:0, neutral:0 };
+  list.forEach(p=>{ if(p.m.pm) pmS[p.m.pm] += p.seats; });
   list.forEach(p=> bs[p.m.bloc] += p.seats);
   odoTo('sCoal', bs.coal); odoTo('sOpp', bs.opp); odoTo('sMid', bs.mid + bs.oth);
   let hl = '개표 시작을 기다리고 있습니다';
@@ -796,12 +812,12 @@ function render(d){
   const maxS = Math.max(...top.map(p=>p.seats), 10);
   $('cols').innerHTML = top.map(p=>`<div class="col" style="--p:${p.seats/maxS}"><div class="cn">${p.m.name}</div><div class="v">${odo('col'+p.letter,p.seats)}</div>
     <div class="bar" style="background:linear-gradient(180deg,${p.m.color},${p.m.color}cc)"></div></div>`).join('');
-  $('colnames').innerHTML = top.map(p=>`<div>${p.m.name}<small>${p.m.leader||''}</small></div>`).join('');
+  $('colnames').innerHTML = top.map(p=>`<div>${p.m.name}<small>${pmTag(p.m)}</small></div>`).join('');
 
   // 장면 3
   const byVote = [...main].sort((a,b)=>b.votes-a.votes).slice(0,16);
   const maxP = Math.max(...byVote.map(p=>p.share), 10);
-  $('rows').innerHTML = byVote.map(p=>`<div class="row ${has&&p.votes<thrVotes?'out':''}"><div class="nm">${p.m.name}<small>${cnt('rv'+p.letter,p.votes,0,true)}표</small></div>
+  $('rows').innerHTML = byVote.map(p=>`<div class="row ${has&&p.votes<thrVotes?'out':''}"><div class="nm">${p.m.name}<small>${pmTag(p.m)} ${cnt('rv'+p.letter,p.votes,0,true)}표</small></div>
     <div class="tr"><i style="width:${p.share/maxP*100}%;background:${p.m.color}"></i><span class="thr" style="left:${3.25/maxP*100}%"></span></div>
     <div class="pc">${cnt('rp'+p.letter,+p.share.toFixed(1),1)}%</div></div>`).join('');
   $('validNote').textContent = has ? `유효표 ${fmt(d.valid)}표 · 의석 최소 ${fmt(Math.ceil(thrVotes))}표` : '';
@@ -811,10 +827,11 @@ function render(d){
                     .sort((a,b)=>b.votes-a.votes || b.seats-a.seats);
     const maxV = Math.max(...all.map(p=>p.share), 1);
     $('allp').innerHTML = all.map((p,i)=>`<div class="ap ${has && p.votes<thrVotes ? 'out':''}">
-      <span class="rk">${i+1}</span><i style="background:${p.m.color}"></i><span class="an">${p.m.name}</span>
+      <span class="rk">${i+1}</span><i style="background:${p.m.color}"></i><span class="an">${p.m.name} ${pmTag(p.m)}</span>
       <span class="av">${cnt('av'+p.letter,p.votes,0,true)}</span><span class="as">${cnt('as'+p.letter,+p.share.toFixed(2),2)}%</span>
       <span class="az">${p.seats ? p.seats+'석' : ''}</span>
       <span class="ab"><b style="width:${p.share/maxV*100}%;background:${p.m.color}"></b></span></div>`).join('');
+    $('allp').style.setProperty('--rows', Math.ceil(all.length / (document.body.classList.contains('portrait') ? 2 : 3)));
     $('allNote').textContent = `전체 ${all.length}개 명부 · 득표순` + (has && !d.exit ? ` · 유효표 ${fmt(d.valid)}표` : '');
   }
 
@@ -823,7 +840,7 @@ function render(d){
     const changed = has && prevSeats[p.letter]!==undefined && prevSeats[p.letter]!==p.seats;
     return `<div class="card ${has&&p.votes<thrVotes?'out':''} ${changed?'flash':''}" style="--c:${p.m.color}">
       <span class="tag" style="background:${BLOCS[p.m.bloc].color}">${p.m.tag||BLOCS[p.m.bloc].label}</span>
-      <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||''}</div>
+      <div class="nm">${p.m.name}</div><div class="ld">${p.m.leader||''} ${pmTag(p.m)}</div>
       <div class="st">${odo('card'+p.letter,p.seats)}<small> 석</small></div>
       <div class="vt">${d.exit ? `<span>출구조사 평균</span><b>${(avgSeats[p.letter]||0).toFixed(1)}석</b>` : `<span>득표 ${cnt('vt'+p.letter,p.votes,0,true)}표</span><b>${cnt('pct'+p.letter,+p.share.toFixed(2),2)}%</b>`}</div></div>`;
   }).join('');
@@ -837,6 +854,7 @@ function render(d){
     const items = d.exit
       ? main.filter(p=>p.seats>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> (출구조사)</span>`)
       : main.filter(p=>p.votes>0).map(p=>`<span><i class="dot" style="background:${p.m.color}"></i>${p.m.name} <b>${p.seats}석</b> ${pctf(p.share)}</span>`);
+    items.unshift(`<span>친네타냐후 <b>${pmS.pro}석</b> · 반네타냐후 <b>${pmS.anti}석</b>${pmS.neutral?` · 중립 <b>${pmS.neutral}석</b>`:''}</span>`);
     const key = items.join('');
     if(key!==tickerKey){ $('ticker').innerHTML = items.join(''); tickerKey=key; }
   }
