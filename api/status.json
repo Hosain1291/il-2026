@@ -1,9 +1,9 @@
 {
-  "checked_at": "2026-10-28T17:16:05Z",
+  "checked_at": "2026-10-28T21:50:30Z",
   "source": "https://navonyaniv.github.io/election-il-2026/results.json",
   "status": "counting",
-  "data_updated": "2026-10-28T14:34:23+02:00",
-  "cec_time": "14:34",
+  "data_updated": "2026-10-28T23:35:38+02:00",
+  "cec_time": "23:35",
   "via": "actions",
   "turnout": {
     "pct": 77.7,
