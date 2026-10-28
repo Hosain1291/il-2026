@@ -67,4 +67,4 @@ Cloudflare Workers에 올리면 개표 API가 됩니다: `/api/results`, `/api/l
 - 행정구역 경계: Administrative boundaries courtesy of [geoBoundaries.org](https://www.geoboundaries.org) (ISR ADM1·ADM2, public domain) — Runfola, D. et al. (2020) PLoS ONE 15(4): e0231866
 - 지역(마을·도시) 중심 좌표: data.gov.il·OpenStreetMap contributors (ODbL), [navonyaniv/election-il-2026](https://github.com/navonyaniv/election-il-2026) `data/towns.json`
 - `map.json`은 `python scripts/build_map.py ADM1.geojson ADM2.geojson towns.json`으로 만듭니다.
-- 서안(유대·사마리아) 지역은 이 경계 자료에 없어서 지도 대신 표에만 나옵니다.
+- 서안지구 경계: geoBoundaries PSE ADM1 중 West Bank (CC BY 4.0) — 유대·사마리아 정착촌 투표 합계를 이 영역에 칠합니다.

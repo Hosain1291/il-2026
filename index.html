@@ -433,10 +433,14 @@ svg.isrmap{flex:1;min-height:0;width:100%}
 .mlegend .sep{flex-basis:100%;height:0}
 svg.isrmap path.a2{stroke:#0c0f16;stroke-width:2;cursor:pointer;transition:fill .8s}
 svg.isrmap path.a2:hover{stroke:#fff;stroke-width:3}
+svg.isrmap path.wb{stroke:#fff;stroke-width:2;stroke-dasharray:6 4;cursor:pointer;transition:fill .8s}
+svg.isrmap.u-town path.wb{cursor:default}
+svg.isrmap path.wb:hover{stroke-width:4}
 svg.isrmap path.a1{fill:none;stroke:#fff;stroke-width:3;pointer-events:none;transition:fill .8s}
 svg.isrmap.u-adm1 path.a1{pointer-events:auto;cursor:pointer}
 svg.isrmap.u-adm1 path.a1:hover{stroke-width:5}
-svg.isrmap:not(.u-adm2) .mlabels{display:none}
+svg.isrmap.u-town .mlabels{display:none}
+svg.isrmap.u-adm1 .mlabels text:not(:last-child){display:none}
 svg.isrmap.u-town path.a2{cursor:default}
 svg.isrmap circle{stroke:#0c0f16;stroke-width:1.5;cursor:pointer}
 svg.isrmap circle:hover{stroke:#fff;stroke-width:3}
@@ -741,11 +745,12 @@ async function loadMap(){
     const [x,y,w,h] = MAP.viewBox;
     document.querySelectorAll('svg.isrmap').forEach(svg=>{
       svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
-      svg.innerHTML = MAP.adm2.map((g,i)=>`<path class="a2" data-i="${i}" d="${g.d}"/>`).join('')
+      svg.innerHTML = (MAP.wb ? `<path class="wb" d="${MAP.wb.d}"/>` : '') + MAP.adm2.map((g,i)=>`<path class="a2" data-i="${i}" d="${g.d}"/>`).join('')
         + MAP.adm1.map((g,i)=>`<path class="a1" data-i="${i}" d="${g.d}"/>`).join('') + `<g class="dots"></g><g class="mlabels"></g>`;
       svg.addEventListener('click', e=>{
         const t=e.target;
         if(t.matches('circle[data-c]')) showTip('town', t.dataset.c);
+        else if(t.matches('path.wb') && mapUnit!=='town') showTip('wb');
         else if(mapUnit==='adm1' && t.matches('path.a1')) showTip('adm1', +t.dataset.i);
         else if(mapUnit!=='adm1' && t.matches('path.a2')) showTip('adm2', +t.dataset.i);
         else $('mtip').style.display='none';
@@ -795,7 +800,8 @@ function regionRow(name, r){
 function showTip(kind, k){
   if(!mapAgg) return; const tip = $('mtip');
   let r, title, sub = '';
-  if(kind==='adm1'){ r = mapAgg.a1[k]; title = MAP.adm1[k].n + ' 도'; }
+  if(kind==='wb'){ r = mapAgg.wb; title = '서안(유대·사마리아)'; sub = '정착촌 투표 합계'; }
+  else if(kind==='adm1'){ r = mapAgg.a1[k]; title = MAP.adm1[k].n + ' 도'; }
   else if(kind==='town'){ r = mapAgg.town[k]; title = (MAP.pts[k]||[])[2] || k; const a = MAP.towns[k];
     sub = a && a[1] >= 0 ? `${MAP.adm2[a[1]].n} 군 · ${MAP.adm1[a[0]].n} 도` : '서안(유대·사마리아)';
     if(r && r.valid) sub += ` · 유효표 ${fmt(r.valid)}`; }
@@ -879,7 +885,8 @@ function ensureLabels(){
   document.querySelectorAll('.mapbox figure.on svg.isrmap').forEach(svg=>{
     const g = svg.querySelector('.mlabels'); if(!g || g.childElementCount) return;
     const ps=[...svg.querySelectorAll('path.a2')]; if(!ps.length || !ps[0].getBBox().width) return;
-    g.innerHTML = ps.map((p,i)=>{ const b=p.getBBox(); return b.width*b.height>1500 ? `<text x="${b.x+b.width/2}" y="${b.y+b.height/2}">${MAP.adm2[i].n}</text>` : ''; }).join('');
+    g.innerHTML = ps.map((p,i)=>{ const b=p.getBBox(); return b.width*b.height>1500 ? `<text x="${b.x+b.width/2}" y="${b.y+b.height/2}">${MAP.adm2[i].n}</text>` : ''; }).join('')
+      + (()=>{ const w=svg.querySelector('path.wb'); if(!w) return ''; const b=w.getBBox(); return `<text x="${b.x+b.width*0.55}" y="${b.y+b.height*0.42}">서안</text>`; })();
   });
 }
 function renderMap(d){
@@ -892,6 +899,7 @@ function renderMap(d){
     const m = svg.dataset.mode;
     svg.classList.remove('u-adm1','u-adm2','u-town'); svg.classList.add('u-'+mapUnit);
     svg.querySelectorAll('path.a2').forEach((p,i)=>p.setAttribute('fill', mapUnit==='adm2' ? fillOf(mapAgg.a2[i], m) : '#161922'));
+    const wbp = svg.querySelector('path.wb'); if(wbp) wbp.setAttribute('fill', mapUnit==='town' ? '#161922' : fillOf(mapAgg.wb, m));
     svg.querySelectorAll('path.a1').forEach((p,i)=>{ p.style.fill = mapUnit==='adm1' ? fillOf(mapAgg.a1[i], m) : 'none'; });
     const g = svg.querySelector('.dots');
     g.innerHTML = mapUnit!=='town' ? '' : Object.entries(mapAgg.town).filter(([c,r])=>r.valid && MAP.pts[c]).sort((a,b)=>b[1].valid-a[1].valid)

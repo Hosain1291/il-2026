@@ -2,7 +2,7 @@
 """geoBoundaries 행정구역 경계(ADM1 6개 도, ADM2 15개 군)를 SVG 경로로 바꾸고,
 각 지역(마을·도시 코드)이 어느 군·도에 속하는지 미리 계산해 map.json 으로 저장.
 
-사용: python scripts/build_map.py ADM1.geojson ADM2.geojson towns.json
+사용: python scripts/build_map.py ADM1.geojson ADM2.geojson towns.json [PSE-ADM1.geojson]
   towns.json: navonyaniv/election-il-2026 의 data/towns.json (지역 코드·중심 좌표, data.gov.il·OSM)
 """
 import json, math, sys, os
@@ -52,7 +52,7 @@ def nearest(lon, lat, feats):
                 if d < best: best, bi = d, i
     return bi, best
 
-def main(a1, a2, towns_path):
+def main(a1, a2, towns_path, pse=None):
     A1 = json.load(open(a1))['features']; A2 = json.load(open(a2))['features']
     towns = json.load(open(towns_path))
     adm1 = [{'n': ADM1_KO.get(f['properties']['shapeName'], f['properties']['shapeName']), 'd': path(f['geometry'])} for f in A1]
@@ -77,8 +77,13 @@ def main(a1, a2, towns_path):
         for a in assign.values():
             if a[1] == i: votes[a[0]] = votes.get(a[0], 0) + 1
         g['p'] = max(votes, key=votes.get) if votes else None
+    wb = None
+    WB = []
+    if pse:   # 팔레스타인 ADM1 중 서안지구(West Bank)만 사용 — 유대·사마리아 지역 결과 표시용
+        WB = [f for f in json.load(open(pse))['features'] if f['properties'].get('shapeISO') == 'PS-WBK' or f['properties'].get('shapeName') == 'West Bank']
+        if WB: wb = {'n': '서안(유대·사마리아)', 'd': path(WB[0]['geometry'])}
     xs = []; ys = []
-    for f in A1 + A2:
+    for f in A1 + A2 + WB:
         for poly in rings(f['geometry']):
             for lon, lat in poly[0]: x, y = proj(lon, lat); xs.append(x); ys.append(y)
     box = [math.floor(min(xs)) - 4, math.floor(min(ys)) - 4, math.ceil(max(xs) - min(xs)) + 8, math.ceil(max(ys) - min(ys)) + 8]
@@ -86,11 +91,11 @@ def main(a1, a2, towns_path):
     for t in towns:
         if 'x' in t:
             x, y = proj(t['x'], t['y']); pts[str(t['c'])] = [round(x, 1), round(y, 1), t.get('n', '')]
-    out = {'note': 'Administrative boundaries courtesy of geoBoundaries.org (ADM1·ADM2, public domain). 지역 중심 좌표: data.gov.il·OpenStreetMap(navonyaniv/election-il-2026).',
-           'viewBox': box, 'adm1': adm1, 'adm2': adm2, 'towns': assign, 'pts': pts}
+    out = {'note': 'Administrative boundaries courtesy of geoBoundaries.org (ISR ADM1·ADM2 public domain; PSE ADM1 West Bank CC BY 4.0). 지역 중심 좌표: data.gov.il·OpenStreetMap(navonyaniv/election-il-2026).',
+           'viewBox': box, 'adm1': adm1, 'adm2': adm2, 'wb': wb, 'towns': assign, 'pts': pts}
     dst = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'map.json')
     json.dump(out, open(dst, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('map.json', os.path.getsize(dst) // 1024, 'KB · towns', len(assign), '· nearest-fallback', miss, '· westbank', sum(1 for a in assign.values() if a[1] == -1))
 
 if __name__ == '__main__':
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:5])
