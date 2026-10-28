@@ -396,6 +396,28 @@ body:not(.portrait) .scene.on .stitle{align-self:flex-start}
 .card .ld .pm{font-size:15px;margin-left:4px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.55)}
 .colnames small .pm{font-size:14px;margin-top:3px}
 .ap .an .pm{font-size:13px;margin-left:4px}
+
+/* 친/반 네타냐후 막대 */
+.pmbar{display:flex;align-items:center;gap:14px;margin-top:26px}
+.pmbar:empty{display:none}
+.pmbar .pl,.pmbar .pr{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.pmbar b{font-size:40px}
+.pmbar .pm{font-size:20px;padding:3px 10px}
+.pmbar .pt{flex:1;display:flex;height:22px;position:relative;background:#14161c}
+.pmbar .pt div{transition:flex 1s}
+.pmbar .pt i{position:absolute;left:50.83%;top:-6px;bottom:-6px;border-left:3px dashed #fff}
+.pmbar.small{margin-top:12px}
+.pmbar.small b{font-size:30px}.pmbar.small .pm{font-size:16px}.pmbar.small .pt{height:16px}
+body.portrait .pmbar b{font-size:44px}
+.pmd{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:4px;vertical-align:middle}
+.pmd-pro{background:#2a6be0;box-shadow:0 0 0 2px #fff}.pmd-anti{background:#e2001a;box-shadow:0 0 0 2px #fff}.pmd-neutral{background:#555c6a;box-shadow:0 0 0 2px #fff}.pmd-x{display:none}
+
+.seatmap .ctr{bottom:196px !important}
+body.portrait .seatmap .ctr{bottom:212px !important;font-size:52px !important}
+.legend .it span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend .it{font-size:17px !important}
+body.portrait .legend .it{font-size:25px !important}
+.pmd{width:9px;height:9px}
 </style>
 </head>
 <body>
@@ -417,6 +439,7 @@ body:not(.portrait) .scene.on .stitle{align-self:flex-start}
       <div class="side opp"><div class="lab">야당</div><div class="big num" id="sOpp">0</div><div class="who">야샤르당 · 비야하드 · 민주당 · 이스라엘 베이테누 · 이스라엘 인민당</div></div>
     </div>
     <div class="blocs" id="blocs"></div>
+    <div class="pmbar" id="pmbar"></div>
   </section>
 
   <section class="scene" data-name="의석 배치도">
@@ -424,7 +447,8 @@ body:not(.portrait) .scene.on .stitle{align-self:flex-start}
     <div class="plan"><div class="legend" id="legend"></div>
       <div class="seatmap"><div id="seatmap" style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center"></div>
         <div class="ctr" id="planCtr"></div>
-        <div class="blocs small" id="blocs2"></div></div></div>
+        <div class="blocs small" id="blocs2"></div>
+        <div class="pmbar small" id="pmbar2"></div></div></div>
   </section>
 
   <section class="scene" data-name="정당별 의석">
@@ -794,6 +818,10 @@ function render(d){
     `<div style="flex:${bs[b]||0.0001};background:${BLOCS[b].color}">${bs[b]?bs[b]:''}</div>`).join('') : '')
     + '<div class="maj"><span>과반 61석</span></div>';
   $('blocs').innerHTML = blocHTML; $('blocs2').innerHTML = blocHTML;
+  const pmHTML = has ? `<div class="pl"><span class="pm pm-pro">친네타냐후</span><b>${pmS.pro}</b></div>
+      <div class="pt"><div style="flex:${pmS.pro||0.0001};background:#2a6be0"></div><div style="flex:${pmS.neutral||0.0001};background:#555c6a"></div><div style="flex:${pmS.anti||0.0001};background:#e2001a"></div><i></i></div>
+      <div class="pr"><b>${pmS.anti}</b><span class="pm pm-anti">반네타냐후</span></div>` : '';
+  $('pmbar').innerHTML = pmHTML; $('pmbar2').innerHTML = pmHTML;
 
   // 의석 배치도: 여당 → 군소 → 야당 순으로 좌석을 채움
   const order = [];
@@ -801,7 +829,7 @@ function render(d){
   paintPlan(order);
   $('planCtr').innerHTML = has ? `${odo('ctrC',bs.coal)} : ${odo('ctrO',bs.opp)}<small>여당 : 야당</small>` : '';
   const lg = b => main.filter(p=>p.m.bloc===b && (p.seats || !has)).map(p=>
-    `<div class="it"><i style="background:${p.m.color}"></i><span>${p.m.name}</span><b>${odo('lg'+p.letter,p.seats)}</b></div>`).join('');
+    `<div class="it"><i style="background:${p.m.color}"></i><span>${p.m.name} <em class="pmd pmd-${p.m.pm||'x'}"></em></span><b>${odo('lg'+p.letter,p.seats)}</b></div>`).join('');
   $('legend').innerHTML = `<div class="g" style="color:var(--coal)">여당<span class="num">${bs.coal}</span></div>${lg('coal')}`
     + `<div class="g" style="color:var(--opp)">야당<span class="num">${bs.opp}</span></div>${lg('opp')}`
     + `<div class="g" style="color:var(--mid)">아랍·제3지대·무소속<span class="num">${bs.mid}</span></div>${lg('mid')}`
