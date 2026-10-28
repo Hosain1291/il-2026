@@ -418,6 +418,9 @@ body.portrait .seatmap .ctr{bottom:212px !important;font-size:52px !important}
 .legend .it{font-size:17px !important}
 body.portrait .legend .it{font-size:25px !important}
 .pmd{width:9px;height:9px}
+.seatmap .blocs.small{margin-top:40px !important}
+body:not(.portrait) .seatmap svg{max-height:420px !important}
+.seatmap{gap:8px !important}
 </style>
 </head>
 <body>
@@ -827,7 +830,8 @@ function render(d){
   const order = [];
   ['coal','mid','oth','opp'].forEach(b=> list.filter(p=>p.m.bloc===b && p.seats).forEach(p=>{ for(let i=0;i<p.seats;i++) order.push(p.m.color); }));
   paintPlan(order);
-  $('planCtr').innerHTML = has ? `${odo('ctrC',bs.coal)} : ${odo('ctrO',bs.opp)}<small>여당 : 야당</small>` : '';
+  $('planCtr').innerHTML = '';
+  if($('ctrNum')){ $('ctrNum').textContent = has ? `${bs.coal} : ${bs.opp}` : ''; $('ctrSub').textContent = has ? '여당 : 야당' : ''; }
   const lg = b => main.filter(p=>p.m.bloc===b && (p.seats || !has)).map(p=>
     `<div class="it"><i style="background:${p.m.color}"></i><span>${p.m.name} <em class="pmd pmd-${p.m.pm||'x'}"></em></span><b>${odo('lg'+p.letter,p.seats)}</b></div>`).join('');
   $('legend').innerHTML = `<div class="g" style="color:var(--coal)">여당<span class="num">${bs.coal}</span></div>${lg('coal')}`
@@ -931,11 +935,13 @@ function loadPlan(){
 }
 
 function drawPlan(){
-  const rows=8, cx=500, cy=470, r0=170, r1=450, radii=[...Array(rows)].map((_,i)=>r0+(r1-r0)*i/(rows-1));
+  const rows=7, cx=500, cy=480, r0=215, r1=465, radii=[...Array(rows)].map((_,i)=>r0+(r1-r0)*i/(rows-1));
   const tot=radii.reduce((a,b)=>a+b,0); const cnt=radii.map(r=>Math.round(120*r/tot)); cnt[rows-1]+=120-cnt.reduce((a,b)=>a+b,0);
   const pts=[]; radii.forEach((r,i)=>{ for(let j=0;j<cnt[i];j++){ const t=Math.PI*(1-j/(cnt[i]-1)); pts.push({x:cx+r*Math.cos(t), y:cy-r*Math.sin(t), t}); } });
   pts.sort((a,b)=>b.t-a.t);
-  return `<svg viewBox="0 0 1000 500">${pts.map(p=>`<circle class="seat" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="16" fill="#26324a"/>`).join('')}</svg>`;
+  return `<svg viewBox="0 0 1000 500">${pts.map(p=>`<circle class="seat" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="16" fill="#26324a"/>`).join('')}`
+    + `<text id="ctrNum" x="500" y="408" text-anchor="middle" font-size="76" font-weight="700" fill="#fff" font-family="BithumbGothicBasic,Cafe24ProSlim,sans-serif"></text>`
+    + `<text id="ctrSub" x="500" y="452" text-anchor="middle" font-size="26" font-weight="700" fill="#a9b3c4" font-family="BithumbGothicBasic,Cafe24ProSlim,sans-serif"></text></svg>`;
 }
 
 function paintPlan(order){
