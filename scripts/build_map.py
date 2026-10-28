@@ -82,8 +82,12 @@ def main(a1, a2, towns_path):
         for poly in rings(f['geometry']):
             for lon, lat in poly[0]: x, y = proj(lon, lat); xs.append(x); ys.append(y)
     box = [math.floor(min(xs)) - 4, math.floor(min(ys)) - 4, math.ceil(max(xs) - min(xs)) + 8, math.ceil(max(ys) - min(ys)) + 8]
+    pts = {}
+    for t in towns:
+        if 'x' in t:
+            x, y = proj(t['x'], t['y']); pts[str(t['c'])] = [round(x, 1), round(y, 1), t.get('n', '')]
     out = {'note': 'Administrative boundaries courtesy of geoBoundaries.org (ADM1·ADM2, public domain). 지역 중심 좌표: data.gov.il·OpenStreetMap(navonyaniv/election-il-2026).',
-           'viewBox': box, 'adm1': adm1, 'adm2': adm2, 'towns': assign}
+           'viewBox': box, 'adm1': adm1, 'adm2': adm2, 'towns': assign, 'pts': pts}
     dst = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'map.json')
     json.dump(out, open(dst, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('map.json', os.path.getsize(dst) // 1024, 'KB · towns', len(assign), '· nearest-fallback', miss, '· westbank', sum(1 for a in assign.values() if a[1] == -1))

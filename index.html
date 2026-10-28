@@ -433,7 +433,14 @@ svg.isrmap{flex:1;min-height:0;width:100%}
 .mlegend .sep{flex-basis:100%;height:0}
 svg.isrmap path.a2{stroke:#0c0f16;stroke-width:2;cursor:pointer;transition:fill .8s}
 svg.isrmap path.a2:hover{stroke:#fff;stroke-width:3}
-svg.isrmap path.a1{fill:none;stroke:#fff;stroke-width:3;pointer-events:none}
+svg.isrmap path.a1{fill:none;stroke:#fff;stroke-width:3;pointer-events:none;transition:fill .8s}
+svg.isrmap.u-adm1 path.a1{pointer-events:auto;cursor:pointer}
+svg.isrmap.u-adm1 path.a1:hover{stroke-width:5}
+svg.isrmap:not(.u-adm2) .mlabels{display:none}
+svg.isrmap.u-town path.a2{cursor:default}
+svg.isrmap circle{stroke:#0c0f16;stroke-width:1.5;cursor:pointer}
+svg.isrmap circle:hover{stroke:#fff;stroke-width:3}
+.munit button{font-size:18px !important;padding:6px 16px !important}
 svg.isrmap text{font:700 30px 'BithumbGothicBasic','Cafe24ProSlim',sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:middle;paint-order:stroke;stroke:#0c0f16;stroke-width:5px;pointer-events:none}
 .mtip{display:none;position:absolute;left:0;top:0;background:#14161c;border-top:4px solid var(--red);padding:12px 16px;min-width:300px;font-size:20px;z-index:3}
 .mtip b{font-size:24px}.mtip small{color:var(--muted);margin-left:6px}
@@ -464,6 +471,7 @@ body.portrait .mapbox{max-height:1000px}
 body.portrait .dots button{font-size:18px !important}
 body.portrait .mtip{font-size:24px;min-width:380px}
 .scene.on{pointer-events:auto}
+body.portrait #mapNote{display:block;margin-top:4px}
 </style>
 </head>
 <body>
@@ -522,6 +530,7 @@ body.portrait .mtip{font-size:24px;min-width:380px}
         <div class="mtip" id="mtip"></div></div>
       <div class="mside">
         <div class="mmode"><button type="button" data-m="pm" class="on">진영 (친·반 네타냐후)</button><button type="button" data-m="lead">정당별 1위</button></div>
+        <div class="mmode munit"><button type="button" data-u="adm1">도 (6)</button><button type="button" data-u="adm2" class="on">군 (15)</button><button type="button" data-u="town">시·마을</button></div>
                 <div class="mlegend" id="mlegend"></div>
         <div class="mlist" id="mlist"></div>
       </div>
@@ -690,17 +699,26 @@ const PM = { pro:{t:'친네타냐후', c:'#2a6be0'}, anti:{t:'반네타냐후', 
 const pmTag = m => m && m.pm ? `<span class="pm pm-${m.pm}">${PM[m.pm].t}</span>` : '';
 
 /* ===== 지도 (geoBoundaries 도·군 경계) ===== */
-let MAP = null, lastMapD = null, mapMode = 'pm';
+let MAP = null, lastMapD = null, mapMode = 'pm', mapUnit = 'adm2';
+try{ mapUnit = localStorage.getItem('il2026-unit') || 'adm2'; }catch(e){}
 try{ mapMode = localStorage.getItem('il2026-map') || 'pm'; }catch(e){}
 function setMapMode(m){
   mapMode = m;
-  document.querySelectorAll('.mmode button').forEach(x=>x.classList.toggle('on', x.dataset.m===m));
+  document.querySelectorAll('.mmode button[data-m]').forEach(x=>x.classList.toggle('on', x.dataset.m===m));
   document.querySelectorAll('.mapbox figure').forEach(f=>f.classList.toggle('on', f.dataset.mode===m));
   try{ localStorage.setItem('il2026-map', m); }catch(e){}
   if(lastMapD) renderMap(lastMapD); else if(MAP) ensureLabels();
 }
-document.querySelectorAll('.mmode button').forEach(b=>b.addEventListener('click', ev=>{ ev.stopPropagation(); setMapMode(b.dataset.m); }));
+function setMapUnit(u){
+  mapUnit = u; $('mtip') && ($('mtip').style.display='none');
+  document.querySelectorAll('.munit button').forEach(x=>x.classList.toggle('on', x.dataset.u===u));
+  try{ localStorage.setItem('il2026-unit', u); }catch(e){}
+  if(lastMapD) renderMap(lastMapD);
+}
+document.querySelectorAll('.mmode button[data-m]').forEach(b=>b.addEventListener('click', ev=>{ ev.stopPropagation(); setMapMode(b.dataset.m); }));
+document.querySelectorAll('.munit button').forEach(b=>b.addEventListener('click', ev=>{ ev.stopPropagation(); setMapUnit(b.dataset.u); }));
 setMapMode(mapMode);
+document.querySelectorAll('.munit button').forEach(x=>x.classList.toggle('on', x.dataset.u===mapUnit));
 async function loadMap(){
   try{
     const r = await fetch('map.json', {cache:'no-store'}); MAP = await r.json();
@@ -708,8 +726,14 @@ async function loadMap(){
     document.querySelectorAll('svg.isrmap').forEach(svg=>{
       svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
       svg.innerHTML = MAP.adm2.map((g,i)=>`<path class="a2" data-i="${i}" d="${g.d}"/>`).join('')
-        + MAP.adm1.map(g=>`<path class="a1" d="${g.d}"/>`).join('') + `<g class="mlabels"></g>`;
-      svg.addEventListener('click', e=>{ const p=e.target.closest('path.a2'); if(p) showTip(+p.dataset.i); else $('mtip').style.display='none'; });
+        + MAP.adm1.map((g,i)=>`<path class="a1" data-i="${i}" d="${g.d}"/>`).join('') + `<g class="dots"></g><g class="mlabels"></g>`;
+      svg.addEventListener('click', e=>{
+        const t=e.target;
+        if(t.matches('circle[data-c]')) showTip('town', t.dataset.c);
+        else if(mapUnit==='adm1' && t.matches('path.a1')) showTip('adm1', +t.dataset.i);
+        else if(mapUnit!=='adm1' && t.matches('path.a2')) showTip('adm2', +t.dataset.i);
+        else $('mtip').style.display='none';
+      });
     });
     if(lastMapD) renderMap(lastMapD);
   }catch(e){ console.warn('지도 파일을 불러오지 못함:', e.message); }
@@ -719,12 +743,13 @@ let mapAgg = null;
 function aggregate(d){
   const plist = (d.plist||[]).map(l=>String(l).trim());
   const mk = () => ({ votes:{}, valid:0 });
-  const A1 = MAP.adm1.map(mk), A2 = MAP.adm2.map(mk), WB = mk();
+  const A1 = MAP.adm1.map(mk), A2 = MAP.adm2.map(mk), WB = mk(), T = {};
   for(const [code,row] of Object.entries(d.towns||{})){
     if(!Array.isArray(row) || !(+row[3] > 0)) continue;
-    const a = MAP.towns[code]; if(!a) continue;
+    const a = MAP.towns[code] || (MAP.pts[code] ? [-1,-1] : null); if(!a) continue;
     const vec = Array.isArray(row[4]) ? row[4] : [];
-    const tgt = a[1] < 0 ? [WB] : [A1[a[0]], A2[a[1]]];
+    T[code] = mk();
+    const tgt = (a[1] < 0 ? [WB] : [A1[a[0]], A2[a[1]]]).concat([T[code]]);
     vec.forEach((n,i)=>{ n=+n||0; if(!n) return; const l=plist[i]; tgt.forEach(t=>{ t.votes[l]=(t.votes[l]||0)+n; t.valid+=n; }); });
   }
   const sum = r => {
@@ -732,7 +757,7 @@ function aggregate(d){
     let pro=0, anti=0; arr.forEach(x=>{ if(x.m.pm==='pro') pro+=x.v; else if(x.m.pm==='anti') anti+=x.v; });
     return { ...r, top:arr, pro: r.valid? pro/r.valid*100:0, anti: r.valid? anti/r.valid*100:0 };
   };
-  return { a1:A1.map(sum), a2:A2.map(sum), wb:sum(WB) };
+  return { a1:A1.map(sum), a2:A2.map(sum), wb:sum(WB), town:Object.fromEntries(Object.entries(T).map(([c,r])=>[c,sum(r)])) };
 }
 function fillOf(r, mode){
   if(!r.valid) return '#1c1f27';
@@ -750,9 +775,15 @@ function regionRow(name, r){
   return `<div class="mr"><span class="mn">${name}</span><span class="mt"><i style="background:${t.m.color}"></i>${t.m.name} ${(t.v/r.valid*100).toFixed(1)}%</span>
     <span class="mp"><b class="p">${r.pro.toFixed(0)}</b>:<b class="a">${r.anti.toFixed(0)}</b></span></div>`;
 }
-function showTip(i){
-  if(!mapAgg) return; const r = mapAgg.a2[i], tip = $('mtip');
-  tip.innerHTML = `<b>${MAP.adm2[i].n}</b> <small>${MAP.adm1[MAP.adm2[i].p]?.n||''}</small>` + (r.valid
+function showTip(kind, k){
+  if(!mapAgg) return; const tip = $('mtip');
+  let r, title, sub = '';
+  if(kind==='adm1'){ r = mapAgg.a1[k]; title = MAP.adm1[k].n + ' 도'; }
+  else if(kind==='town'){ r = mapAgg.town[k]; title = (MAP.pts[k]||[])[2] || k; const a = MAP.towns[k];
+    sub = a && a[1] >= 0 ? `${MAP.adm2[a[1]].n} 군 · ${MAP.adm1[a[0]].n} 도` : '서안(유대·사마리아)';
+    if(r && r.valid) sub += ` · 유효표 ${fmt(r.valid)}`; }
+  else { r = mapAgg.a2[k]; title = MAP.adm2[k].n + ' 군'; sub = (MAP.adm1[MAP.adm2[k].p]?.n||'') + ' 도'; }
+  tip.innerHTML = `<b>${title}</b> <small>${sub}</small>` + (r && r.valid
     ? r.top.slice(0,4).map(x=>`<div><i style="background:${x.m.color}"></i>${x.m.name}<span>${(x.v/r.valid*100).toFixed(1)}%</span></div>`).join('')
       + `<div class="pmline">친네타냐후 ${r.pro.toFixed(1)}% · 반네타냐후 ${r.anti.toFixed(1)}%</div>`
     : '<div>아직 개표 결과 없음</div>');
@@ -771,10 +802,18 @@ function renderMap(d){
   ensureLabels();
   if(!d.towns){ $('mlist').innerHTML = '<div class="mr"><span class="mz">지역별 데이터가 없는 데이터 출처입니다</span></div>'; return; }
   mapAgg = aggregate(d);
-  document.querySelectorAll('svg.isrmap').forEach(svg=>{ const m=svg.dataset.mode; svg.querySelectorAll('path.a2').forEach((p,i)=>p.setAttribute('fill', fillOf(mapAgg.a2[i], m))); });
+  document.querySelectorAll('svg.isrmap').forEach(svg=>{
+    const m = svg.dataset.mode;
+    svg.classList.remove('u-adm1','u-adm2','u-town'); svg.classList.add('u-'+mapUnit);
+    svg.querySelectorAll('path.a2').forEach((p,i)=>p.setAttribute('fill', mapUnit==='adm2' ? fillOf(mapAgg.a2[i], m) : '#161922'));
+    svg.querySelectorAll('path.a1').forEach((p,i)=>{ p.style.fill = mapUnit==='adm1' ? fillOf(mapAgg.a1[i], m) : 'none'; });
+    const g = svg.querySelector('.dots');
+    g.innerHTML = mapUnit!=='town' ? '' : Object.entries(mapAgg.town).filter(([c,r])=>r.valid && MAP.pts[c]).sort((a,b)=>b[1].valid-a[1].valid)
+      .map(([c,r])=>{ const [x,y]=MAP.pts[c]; return `<circle data-c="${c}" cx="${x}" cy="${y}" r="${Math.min(30, 3 + Math.sqrt(r.valid)/9).toFixed(1)}" fill="${fillOf(r, m)}"/>`; }).join('');
+  });
   $('mlist').innerHTML = '<div class="mh"><span>도</span><span>1위 정당</span><span><b class="p">친</b> : <b class="a">반</b> 네타냐후 %</span></div>'
     + MAP.adm1.map((g,i)=>regionRow(g.n, mapAgg.a1[i])).join('') + regionRow('서안(유대·사마리아)', mapAgg.wb);
-  $('mapNote').textContent = (mapMode==='pm' ? '진영: 친네타냐후(파랑) 대 반네타냐후(빨강)' : '정당별 1위: 지역마다 1등 한 정당 색') + ' · 진할수록 격차 큼 · 지역을 누르면 상세';
+  $('mapNote').textContent = ({adm1:'도별',adm2:'군별',town:'시·마을별 · 원 크기=유효표'}[mapUnit]) + ' · ' + (mapMode==='pm' ? '진영' : '정당별 1위') + ' · 진할수록 격차 큼';
   if(mapMode==='pm') $('mlegend').innerHTML = '<span><i style="background:#2a6be0"></i>친네타냐후 우세</span><span><i style="background:#e2001a"></i>반네타냐후 우세</span>';
   else { const seen = {}; [...mapAgg.a2, ...mapAgg.a1, mapAgg.wb].forEach(r=>{ if(r.valid){ const t=r.top[0]; seen[t.m.name]=t.m.color; } });
          $('mlegend').innerHTML = Object.entries(seen).map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join(''); }
