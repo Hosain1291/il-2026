@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
 <meta name="theme-color" content="#071330">
 <title>2026 이스라엘 총선 개표방송</title>
 <style>
@@ -16,7 +16,7 @@
   --ink:#f3f6fb; --muted:#9fb0cc; --glass:rgba(10,24,52,.82); --line:rgba(120,160,230,.25);
 }
 *{box-sizing:border-box;margin:0}
-html,body{height:100%;margin:0;background:#040a1a;overflow:hidden;overscroll-behavior:none;touch-action:pan-y;color:var(--ink);font-family:'BithumbGothicBasic','Cafe24ProSlim',sans-serif,sans-serif}
+html,body{height:100%;margin:0;background:#040a1a;overflow:hidden;overscroll-behavior:none;touch-action:none;color:var(--ink);font-family:'BithumbGothicBasic','Cafe24ProSlim',sans-serif,sans-serif}
 .num{font-family:'BithumbGothicBasic','Cafe24ProSlim',sans-serif,sans-serif;font-variant-numeric:tabular-nums}
 
 /* 1920×1080 무대를 화면 크기에 맞춰 축소·확대 (레터박스) */
@@ -352,6 +352,8 @@ body.portrait .ptab td.l{font-size:20px}
 .ptab .ref{opacity:.45}
 body.portrait .dots button{font-size:21px !important;padding:10px 4px 12px !important;white-space:nowrap;letter-spacing:-.03em}
 .dots button{white-space:nowrap}
+.zoom-hint{display:none}
+body.zoomed .sbar,body.zoomed .nav{opacity:.35}
 </style>
 </head>
 <body>
@@ -867,7 +869,7 @@ function schedule(ms){
   clearTimeout(sceneTimer); remain = ms;
   if(paused) return;
   dueAt = Date.now() + ms;
-  sceneTimer = setTimeout(()=>show((cur+1)%scenes.length), ms);
+  sceneTimer = setTimeout(()=>{ if(zoomed()) schedule(3000); else show((cur+1)%scenes.length); }, ms);
 }
 function setPaused(p){
   paused = p;
@@ -904,17 +906,75 @@ function fit(){
   const st = $('stage');
   st.style.width = W+'px'; st.style.height = H+'px';
   const k = Math.min(w/W, h/H);
-  st.style.transform = `translate(${(w-W*k)/2}px,${(h-H*k)/2}px) scale(${k})`;
+  base = { x:(w-W*k)/2, y:(h-H*k)/2, k, w, h, W, H };
+  applyZoom();
 }
+/* ===== 손가락 확대 (모바일) =====
+ * 두 손가락으로 벌리면 확대(최대 5배), 확대한 채로 한 손가락으로 끌면 이동, 두 번 탭하면 원래 크기.
+ * 확대 중에는 장면 자동 넘김과 좌우 밀기 넘김을 멈춤. */
+let base = { x:0, y:0, k:1, w:0, h:0, W:0, H:0 };
+let Z = { s:1, x:0, y:0 };                               // 화면 좌표 기준 추가 배율·이동
+function clampZoom(){
+  Z.s = Math.min(5, Math.max(1, Z.s));
+  if(Z.s <= 1.001){ Z = { s:1, x:0, y:0 }; return; }
+  const sw = base.W*base.k*Z.s, sh = base.H*base.k*Z.s;   // 확대된 무대 크기
+  const bx = base.x*Z.s, by = base.y*Z.s;
+  Z.x = Math.min(-bx + Math.max(0,(base.w - sw)/2) + (sw>base.w?0:0), Math.max(base.w - sw - bx, Z.x));
+  Z.y = Math.min(-by + Math.max(0,(base.h - sh)/2), Math.max(base.h - sh - by, Z.y));
+}
+function applyZoom(){
+  clampZoom();
+  const st = $('stage');
+  st.style.transform = `translate(${base.x*Z.s + Z.x}px,${base.y*Z.s + Z.y}px) scale(${base.k*Z.s})`;
+  document.body.classList.toggle('zoomed', Z.s > 1);
+}
+function zoomed(){ return Z.s > 1.01; }
 if(window.visualViewport) visualViewport.addEventListener('resize', fit);
 addEventListener('orientationchange', ()=>setTimeout(fit, 300));
 // 모바일: 좌우로 밀어서 장면 넘기기
 let tx=null, ty=null;
-addEventListener('touchstart', e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
+let pinch = null, pan = null, lastTap = 0, swipe = null;
+const dist = (a,b) => Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+const mid  = (a,b) => ({ x:(a.clientX+b.clientX)/2, y:(a.clientY+b.clientY)/2 });
+addEventListener('touchstart', e=>{
+  if(e.touches.length === 2){
+    const [a,b] = e.touches;
+    pinch = { d:dist(a,b), s:Z.s, x:Z.x, y:Z.y, m:mid(a,b) }; pan = null; swipe = null;
+  } else if(e.touches.length === 1){
+    const t = e.touches[0];
+    if(zoomed()) pan = { x:t.clientX, y:t.clientY, zx:Z.x, zy:Z.y };
+    else swipe = { x:t.clientX, y:t.clientY };
+    const now = Date.now();
+    if(now - lastTap < 300 && zoomed()){ Z = { s:1, x:0, y:0 }; applyZoom(); pan = null; e.preventDefault(); }
+    lastTap = now;
+  }
+}, {passive:false});
+addEventListener('touchmove', e=>{
+  if(pinch && e.touches.length === 2){
+    e.preventDefault();
+    const [a,b] = e.touches, m = mid(a,b);
+    const ns = Math.min(5, Math.max(1, pinch.s * dist(a,b)/pinch.d));
+    // 두 손가락 가운데 지점이 화면에서 제자리에 있도록 이동값 보정
+    const r = ns / pinch.s;
+    Z.s = ns;
+    Z.x = m.x - r*(pinch.m.x - pinch.x) - (base.x*ns - base.x*pinch.s*r);
+    Z.y = m.y - r*(pinch.m.y - pinch.y) - (base.y*ns - base.y*pinch.s*r);
+    applyZoom();
+  } else if(pan && e.touches.length === 1){
+    e.preventDefault();
+    const t = e.touches[0];
+    Z.x = pan.zx + (t.clientX - pan.x); Z.y = pan.zy + (t.clientY - pan.y);
+    applyZoom();
+  }
+}, {passive:false});
 addEventListener('touchend', e=>{
-  if(tx==null) return;
-  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; tx=null;
-  if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) show(dx<0 ? (cur+1)%scenes.length : (cur-1+scenes.length)%scenes.length);
+  if(e.touches.length < 2) pinch = null;
+  if(!e.touches.length) pan = null;
+  if(swipe && !e.touches.length && !zoomed()){
+    const t = e.changedTouches[0], dx = t.clientX - swipe.x, dy = t.clientY - swipe.y;
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) show(dx<0 ? (cur+1)%scenes.length : (cur-1+scenes.length)%scenes.length);
+  }
+  if(!e.touches.length) swipe = null;
 }, {passive:true});
 addEventListener('resize', fit); fit();
 
