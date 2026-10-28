@@ -1,8 +1,8 @@
 {
   "api": "israel-election-live",
   "status": "counting",
-  "updated": "2026-10-28T07:44:22+02:00",
-  "cec_time": "07:44",
+  "updated": "2026-10-28T07:46:17+02:00",
+  "cec_time": "07:46",
   "counted_pct": 54.86,
   "eligible_counted": 4021970,
   "voters": 2854332,
