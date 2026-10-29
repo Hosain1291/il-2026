@@ -1,15 +1,15 @@
 {
   "api": "israel-election-live",
   "status": "counting",
-  "updated": "2026-10-29T16:56:39+02:00",
-  "cec_time": "16:56",
-  "counted_pct": 99.65,
-  "eligible_counted": 7306625,
-  "voters": 5638529,
-  "invalid": 25373,
-  "valid": 5613156,
-  "turnout_pct": 77.17,
-  "threshold_votes": 182428,
+  "updated": "2026-10-29T20:00:28+02:00",
+  "cec_time": "20:00",
+  "counted_pct": 99.89,
+  "eligible_counted": 7324120,
+  "voters": 5704141,
+  "invalid": 25789,
+  "valid": 5678352,
+  "turnout_pct": 77.88,
+  "threshold_votes": 184547,
   "blocs": {
     "gov": 53,
     "opp": 48,
@@ -26,8 +26,8 @@
       "leader": "네타냐후",
       "bloc": "gov",
       "group": null,
-      "votes": 1152059,
-      "share": 20.52,
+      "votes": 1164494,
+      "share": 20.51,
       "passed": true,
       "seats": 27
     },
@@ -39,8 +39,8 @@
       "leader": "아이젠코트",
       "bloc": "opp",
       "group": null,
-      "votes": 901840,
-      "share": 16.07,
+      "votes": 911796,
+      "share": 16.06,
       "passed": true,
       "seats": 21
     },
@@ -52,8 +52,8 @@
       "leader": "베네트·라피드",
       "bloc": "opp",
       "group": null,
-      "votes": 522094,
-      "share": 9.3,
+      "votes": 530253,
+      "share": 9.34,
       "passed": true,
       "seats": 12
     },
@@ -65,8 +65,8 @@
       "leader": "자바린·티비",
       "bloc": "mid",
       "group": "arab",
-      "votes": 496878,
-      "share": 8.85,
+      "votes": 499878,
+      "share": 8.8,
       "passed": true,
       "seats": 11
     },
@@ -78,7 +78,7 @@
       "leader": "골란",
       "bloc": "opp",
       "group": null,
-      "votes": 361756,
+      "votes": 365733,
       "share": 6.44,
       "passed": true,
       "seats": 8
@@ -91,8 +91,8 @@
       "leader": "압바스",
       "bloc": "mid",
       "group": "arab",
-      "votes": 333546,
-      "share": 5.94,
+      "votes": 336275,
+      "share": 5.92,
       "passed": true,
       "seats": 8
     },
@@ -104,7 +104,7 @@
       "leader": "리베르만",
       "bloc": "opp",
       "group": null,
-      "votes": 332713,
+      "votes": 336838,
       "share": 5.93,
       "passed": true,
       "seats": 7
@@ -117,8 +117,8 @@
       "leader": "벤그비르",
       "bloc": "gov",
       "group": null,
-      "votes": 320700,
-      "share": 5.71,
+      "votes": 325650,
+      "share": 5.73,
       "passed": true,
       "seats": 7
     },
@@ -130,8 +130,8 @@
       "leader": "아셰르",
       "bloc": "gov",
       "group": null,
-      "votes": 310067,
-      "share": 5.52,
+      "votes": 312241,
+      "share": 5.5,
       "passed": true,
       "seats": 7
     },
@@ -143,8 +143,8 @@
       "leader": "데리",
       "bloc": "gov",
       "group": null,
-      "votes": 295889,
-      "share": 5.27,
+      "votes": 298881,
+      "share": 5.26,
       "passed": true,
       "seats": 6
     },
@@ -156,8 +156,8 @@
       "leader": "스모트리치·페이글린",
       "bloc": "gov",
       "group": null,
-      "votes": 283329,
-      "share": 5.05,
+      "votes": 289181,
+      "share": 5.09,
       "passed": true,
       "seats": 6
     },
@@ -169,8 +169,8 @@
       "leader": "헨델·젤레카",
       "bloc": "mid",
       "group": "third",
-      "votes": 152180,
-      "share": 2.71,
+      "votes": 154585,
+      "share": 2.72,
       "passed": false,
       "seats": 0
     },
@@ -182,8 +182,8 @@
       "leader": "윈터",
       "bloc": "opp",
       "group": null,
-      "votes": 93688,
-      "share": 1.67,
+      "votes": 95288,
+      "share": 1.68,
       "passed": false,
       "seats": 0
     },
@@ -195,7 +195,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 11106,
+      "votes": 11255,
       "share": 0.2,
       "passed": false,
       "seats": 0
@@ -208,8 +208,8 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 10377,
-      "share": 0.18,
+      "votes": 10563,
+      "share": 0.19,
       "passed": false,
       "seats": 0
     },
@@ -221,7 +221,7 @@
       "leader": "마오즈",
       "bloc": "mid",
       "group": "unaligned",
-      "votes": 9641,
+      "votes": 9876,
       "share": 0.17,
       "passed": false,
       "seats": 0
@@ -234,7 +234,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 5649,
+      "votes": 5701,
       "share": 0.1,
       "passed": false,
       "seats": 0
@@ -247,7 +247,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 4263,
+      "votes": 4303,
       "share": 0.08,
       "passed": false,
       "seats": 0
@@ -260,7 +260,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 2052,
+      "votes": 2076,
       "share": 0.04,
       "passed": false,
       "seats": 0
@@ -273,7 +273,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 1450,
+      "votes": 1464,
       "share": 0.03,
       "passed": false,
       "seats": 0
@@ -286,7 +286,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 1063,
+      "votes": 1070,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -299,7 +299,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 1026,
+      "votes": 1047,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -312,7 +312,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 948,
+      "votes": 953,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -325,7 +325,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 920,
+      "votes": 926,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -338,7 +338,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 911,
+      "votes": 917,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -351,7 +351,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 894,
+      "votes": 901,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -364,7 +364,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 856,
+      "votes": 870,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -377,7 +377,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 780,
+      "votes": 787,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -390,7 +390,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 759,
+      "votes": 769,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -403,7 +403,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 733,
+      "votes": 745,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -416,7 +416,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 700,
+      "votes": 712,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -429,7 +429,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 571,
+      "votes": 576,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -442,7 +442,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 501,
+      "votes": 507,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -455,7 +455,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 470,
+      "votes": 479,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -468,7 +468,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 405,
+      "votes": 411,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -481,7 +481,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 252,
+      "votes": 255,
       "share": 0.0,
       "passed": false,
       "seats": 0
@@ -494,7 +494,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 49,
+      "votes": 53,
       "share": 0.0,
       "passed": false,
       "seats": 0
@@ -507,7 +507,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 41,
+      "votes": 43,
       "share": 0.0,
       "passed": false,
       "seats": 0
