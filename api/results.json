@@ -1,13 +1,13 @@
 {
   "api": "israel-election-live",
   "status": "counting",
-  "updated": "2026-10-30T00:01:38+02:00",
-  "cec_time": "00:01",
+  "updated": "2026-10-30T13:55:58+02:00",
+  "cec_time": "13:55",
   "counted_pct": 100,
   "eligible_counted": 7331981,
-  "voters": 5716665,
-  "invalid": 25983,
-  "valid": 5690682,
+  "voters": 5716673,
+  "invalid": 25988,
+  "valid": 5690685,
   "turnout_pct": 77.97,
   "threshold_votes": 184948,
   "blocs": {
@@ -52,7 +52,7 @@
       "leader": "베네트·라피드",
       "bloc": "opp",
       "group": null,
-      "votes": 531414,
+      "votes": 531476,
       "share": 9.34,
       "passed": true,
       "seats": 12
@@ -169,7 +169,7 @@
       "leader": "헨델·젤레카",
       "bloc": "mid",
       "group": "third",
-      "votes": 154950,
+      "votes": 154995,
       "share": 2.72,
       "passed": false,
       "seats": 0
@@ -234,7 +234,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 5710,
+      "votes": 5712,
       "share": 0.1,
       "passed": false,
       "seats": 0
@@ -247,7 +247,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 4339,
+      "votes": 4294,
       "share": 0.08,
       "passed": false,
       "seats": 0
@@ -279,19 +279,6 @@
       "seats": 0
     },
     {
-      "letter": "רץ",
-      "id": null,
-      "name": "하카할(사퇴)",
-      "name_en": null,
-      "leader": null,
-      "bloc": "other",
-      "group": null,
-      "votes": 1074,
-      "share": 0.02,
-      "passed": false,
-      "seats": 0
-    },
-    {
       "letter": "צף",
       "id": null,
       "name": "צף",
@@ -299,7 +286,20 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 1051,
+      "votes": 1050,
+      "share": 0.02,
+      "passed": false,
+      "seats": 0
+    },
+    {
+      "letter": "רץ",
+      "id": null,
+      "name": "하카할(사퇴)",
+      "name_en": null,
+      "leader": null,
+      "bloc": "other",
+      "group": null,
+      "votes": 1011,
       "share": 0.02,
       "passed": false,
       "seats": 0
@@ -390,7 +390,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 773,
+      "votes": 774,
       "share": 0.01,
       "passed": false,
       "seats": 0
@@ -429,7 +429,7 @@
       "leader": null,
       "bloc": "other",
       "group": null,
-      "votes": 579,
+      "votes": 581,
       "share": 0.01,
       "passed": false,
       "seats": 0
